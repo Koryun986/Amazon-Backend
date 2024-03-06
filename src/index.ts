@@ -9,6 +9,7 @@ app.use(cors({
     origin: "*",
 }));
 
+app.use(express.json());
 
 sequelize.sync({ force: true }).then(() => {
     console.log("Connect to DB");
