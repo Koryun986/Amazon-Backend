@@ -14,7 +14,7 @@ router.post(
     "/registration",
     body("email").isEmail(),
     body("password").isLength(passwordValidationOptions),
-    authController.registration
+    authController.registration,
 );
 
 export default router;
