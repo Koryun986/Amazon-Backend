@@ -11,7 +11,7 @@ app.use(cors({
 
 app.use(express.json());
 
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
     console.log("Connect to DB");
     app.listen(PORT, () => {
         console.log(`Server starts: ${PORT}`);    

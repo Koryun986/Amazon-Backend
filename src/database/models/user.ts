@@ -1,8 +1,8 @@
 import { Model, DataType, InferAttributes, InferCreationAttributes, CreationOptional, DataTypes } from "@sequelize/core";
 //@ts-ignore
 import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from '@sequelize/core/decorators-legacy';
-
 import { UserAttributes } from "../attributes/user-attributes";
+
 export class User extends Model<UserAttributes> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
