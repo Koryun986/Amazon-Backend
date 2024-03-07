@@ -11,10 +11,6 @@ export class Token extends Model<InferAttributes<Token>, InferCreationAttributes
     @NotNull
     declare refresh_token: string;
 
-    @Attribute(DataTypes.DATE)
-    @NotNull
-    declare expires_in: Date;
-
     @Attribute(DataTypes.INTEGER)
     declare user_id: number;
 }
