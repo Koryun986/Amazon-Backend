@@ -16,7 +16,7 @@ router.post(
     body("password").isLength(passwordValidationOptions),
     authController.registration,
 );
-
+router.post("/login", authController.login);
 router.get("/activate/:link", authController.activate);
 
 export default router;
