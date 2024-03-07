@@ -1,14 +1,14 @@
 import bcrypt from "bcrypt";
-import uuid from "uuid";
+import {v4} from "uuid";
 import { User } from "../database/models/user";
-import type { UserType } from "../types/auth-types";
 import sequelize from "../database";
 import { UserActivationLink } from "../database/models/user-activation-link";
 import mailService from "./mail-service";
 import { API_URL } from "../config/envirenmentVariables";
 import tokenService from "./token-service";
 import { Token } from "../database/models/token";
-import { UserDto } from "../dtos/user-dto";
+import type { UserType } from "../types/auth-types";
+import type { UserDto } from "../dtos/user-dto";
 
 class AuthService {
     async createUser(user: UserType) {
@@ -18,7 +18,9 @@ class AuthService {
             const userEntity = await User.create({...user, password: hashedPassword, is_verfied: false});
             await userEntity.save();
 
-            const activationLink = uuid.v4();
+            const activationLink = v4();
+            console.log(activationLink);
+            
             const userActivationLinkEntity = await UserActivationLink.create({activation_link: activationLink, user_id: userEntity.id})
             await userActivationLinkEntity.save();
             await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${activationLink}`);
@@ -36,6 +38,8 @@ class AuthService {
                 refresh_token: refreshToken,
             };
         } catch (e) {
+            console.log(e);
+            
             await transaction.rollback();
         }
 
