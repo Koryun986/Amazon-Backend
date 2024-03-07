@@ -6,7 +6,7 @@ export class User extends Model<UserAttributes> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement
-    declare id: number;
+    declare id: CreationOptional<number>;
 
     @Attribute(DataTypes.STRING)
     @NotNull
