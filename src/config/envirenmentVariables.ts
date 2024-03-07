@@ -17,3 +17,5 @@ export const API_URL = process.env.API_URL;
 
 export const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET;
 export const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
+export const COOKIES_REFRESH_TOKEN = "refresh_token";
