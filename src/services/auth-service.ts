@@ -4,7 +4,7 @@ import { User } from "../database/models/user";
 import type { UserType } from "../types/auth-types";
 
 class AuthService {
-    async createUsre(user: UserType) {
+    async createUser(user: UserType) {
         const hashedPassword = await this.hashPassword(user.password);
         await User.create({...user, password: hashedPassword, is_verfied: false});
         const activationLink = uuid.v4();
