@@ -1,4 +1,4 @@
-import { Model, InferAttributes, InferCreationAttributes, DataTypes } from '@sequelize/core';
+import { Model, InferAttributes, InferCreationAttributes, DataTypes, CreationOptional } from '@sequelize/core';
 import { Attribute, AutoIncrement, NotNull, PrimaryKey, Table } from '@sequelize/core/decorators-legacy';
 
 @Table({tableName: "user-activation-links"})
@@ -6,7 +6,7 @@ export class UserActivationLink extends Model<InferAttributes<UserActivationLink
     @Attribute(DataTypes.INTEGER)
     @AutoIncrement
     @PrimaryKey
-    declare id: number;
+    declare id: CreationOptional<number>;
 
     @Attribute(DataTypes.STRING)
     @NotNull
@@ -14,5 +14,5 @@ export class UserActivationLink extends Model<InferAttributes<UserActivationLink
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
-    declare user_id: string;
+    declare user_id: number;
 }
