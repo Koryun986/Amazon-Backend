@@ -32,7 +32,8 @@ class AuthService {
             await transaction.commit();
             return {
                 ...userDto,
-                access_token: accessToken
+                access_token: accessToken,
+                refresh_token: refreshToken,
             };
         } catch (e) {
             await transaction.rollback();
