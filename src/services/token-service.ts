@@ -11,6 +11,15 @@ class TokenService {
             refreshToken
         };
     }
+
+    validateRefreshToken(refreshToken: string) {
+        try {
+            const userDto = jwt.verify(refreshToken, JWT_REFRESH_SECRET!);
+            return userDto;
+        } catch (e) {
+            return null;
+        }
+    }
 }
 
 export default new TokenService();

@@ -29,6 +29,17 @@ class AuthController {
         }
     }
 
+    async refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const {refresh_token} = req.cookies;
+            const data = await authService.refresh(refresh_token);
+            res.cookie(COOKIES_REFRESH_TOKEN, data?.refresh_token,  {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
+            return res.json(data);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async activate(req: Request, res: Response, next: NextFunction) {
         try {
             const activationLink = req.params.link;

@@ -29,7 +29,7 @@ class AuthService {
             await userActivationLinkEntity.save();
             await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${activationLink}`);
 
-            const userDto: UserDto = {email: user.email, last_name: user.last_name, first_name: user.first_name};
+            const userDto = this.getUserDtoFromEntity(userEntity);
 
             const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
             const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
@@ -59,7 +59,7 @@ class AuthService {
             if (!isPasswordsEqual) {
                 throw new Error("Password isn't correct");
             }
-            const userDto: UserDto = {first_name: userEntity.first_name, last_name: userEntity.last_name, email: userEntity.email};
+            const userDto = this.getUserDtoFromEntity(userEntity);
             const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
             const token = await Token.findOne({where: {user_id: userEntity.id}});
             if (!token) {
@@ -76,6 +76,34 @@ class AuthService {
                 access_token: accessToken,
                 refresh_token: refreshToken,
             };
+        } catch (e) {
+            await transaction.rollback();
+        }
+    }
+
+    async refresh(refreshToken: string) {
+        const transaction = await sequelize.startUnmanagedTransaction();
+        if (!refreshToken) {
+            throw new Error("Login to your account 1");
+        }
+        const userDto = tokenService.validateRefreshToken(refreshToken);
+        const tokenEntity = await Token.findOne({where: {refresh_token: refreshToken}});
+        if (!userDto || !tokenEntity) {
+            console.log("userDto", userDto);
+            
+            throw new Error("Login to your account");
+        }
+        try {
+            const userEntity = await User.findByPk(tokenEntity.user_id);
+            const validUserDto = this.getUserDtoFromEntity(userEntity!);
+            const {accessToken, refreshToken: newRefreshToken} = tokenService.generateTokens(validUserDto);
+            tokenEntity.refresh_token = newRefreshToken;
+            await transaction.commit();
+            return {
+                ...validUserDto,
+                access_token: accessToken,
+                refresh_token: newRefreshToken,
+            }
         } catch (e) {
             await transaction.rollback();
         }
@@ -101,6 +129,11 @@ class AuthService {
     private async isUserExist(email: UserDto["email"]) {
         const candidate = await User.findOne({where: {email}});
         return !!candidate;
+    }
+
+    private getUserDtoFromEntity(user: User) {
+        return {first_name: user.first_name, last_name: user.last_name, email: user.email};
+
     }
 }
 
