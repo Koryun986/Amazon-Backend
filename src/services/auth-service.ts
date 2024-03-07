@@ -49,24 +49,36 @@ class AuthService {
     }
 
     async login(user: LoginUserType) {
-        const userEntity = await User.findOne({where: {email: user.email}});
-        if (!userEntity) {
-            throw new Error("User with this email doesn't exist");
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            const userEntity = await User.findOne({where: {email: user.email}});
+            if (!userEntity) {
+                throw new Error("User with this email doesn't exist");
+            }
+            const isPasswordsEqual = await bcrypt.compare(user.password, userEntity.password);
+            if (!isPasswordsEqual) {
+                throw new Error("Password isn't correct");
+            }
+            const userDto: UserDto = {first_name: userEntity.first_name, last_name: userEntity.last_name, email: userEntity.email};
+            const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
+            const token = await Token.findOne({where: {user_id: userEntity.id}});
+            if (!token) {
+                const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
+                await tokenEntity.save();
+            } else {
+                token.refresh_token = refreshToken;
+                await token?.save();
+            }
+
+            await transaction.commit();
+            return {
+                ...userDto,
+                access_token: accessToken,
+                refresh_token: refreshToken,
+            };
+        } catch (e) {
+            await transaction.rollback();
         }
-        const isPasswordsEqual = await bcrypt.compare(user.password, userEntity.password);
-        if (!isPasswordsEqual) {
-            throw new Error("Password isn't correct");
-        }
-        const userDto: UserDto = {first_name: userEntity.first_name, last_name: userEntity.last_name, email: userEntity.email};
-        const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
-        const token = await Token.findOne({where: {user_id: userEntity.id}});
-        token!.refresh_token = refreshToken;
-        await token?.save();
-        return {
-            ...userDto,
-            access_token: accessToken,
-            refresh_token: refreshToken,
-        };
     }
 
     async activate(activationLink: string) {
