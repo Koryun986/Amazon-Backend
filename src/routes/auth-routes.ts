@@ -17,4 +17,6 @@ router.post(
     authController.registration,
 );
 
+router.get("/activate/:link", authController.activate);
+
 export default router;

@@ -18,6 +18,14 @@ class AuthController {
             next(error);
         }
     }
+
+    async activate(req: Request, res: Response, next: NextFunction) {
+        try {
+            const activationLink = req.params.link;
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new AuthController();
