@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { body } from "express-validator";
 import type { MinMaxOptions } from "express-validator/src/options";
-import authController from "../controllers/authController";
+import authController from "../controllers/auth-controller";
 
 const router = Router();
 

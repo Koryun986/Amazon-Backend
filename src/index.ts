@@ -2,7 +2,7 @@ import express, { Express } from "express";
 import cors from "cors";
 import { PORT } from "./config/envirenmentVariables";
 import sequelize from "./database";
-import authRouter from "./routes/authRoutes";
+import authRouter from "./routes/auth-routes";
 
 const app: Express = express();
 
