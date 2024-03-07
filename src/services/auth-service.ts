@@ -49,6 +49,19 @@ class AuthService {
 
     }
 
+    async activate(activationLink: string) {
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            const userActivationLinkEntity = await UserActivationLink.findOne({where: {activation_link: activationLink}});
+            const userEntity = await User.findByPk(userActivationLinkEntity?.id);
+            userEntity!.is_activated = true;
+            await userEntity?.save()
+            await transaction.commit();
+        } catch (e) {
+            await transaction.rollback();
+        }
+    }
+
     private async hashPassword(password: string) {
         return await bcrypt.hash(password, 3);
     }

@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction, CookieOptions } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { validationResult } from "express-validator";
 import authService from '../services/auth-service';
-import { COOKIES_REFRESH_TOKEN } from '../config/envirenmentVariables';
+import { CLIENT_URL, COOKIES_REFRESH_TOKEN } from '../config/envirenmentVariables';
 
 class AuthController {
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -22,6 +22,8 @@ class AuthController {
     async activate(req: Request, res: Response, next: NextFunction) {
         try {
             const activationLink = req.params.link;
+            await authService.activate(activationLink);
+            return res.redirect(CLIENT_URL!);
         } catch (error) {
             next(error);
         }
