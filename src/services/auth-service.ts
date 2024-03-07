@@ -13,6 +13,10 @@ import type { UserDto } from "../dtos/user-dto";
 class AuthService {
     async createUser(user: UserType) {
         const transaction = await sequelize.startUnmanagedTransaction();
+        const isUserExist = await this.isUserExist(user.email)
+        if (isUserExist) {
+            throw new Error("User with this email already exists");
+        }
         try {
             const hashedPassword = await this.hashPassword(user.password);
             const userEntity = await User.create({...user, password: hashedPassword, is_verfied: false});
@@ -47,6 +51,11 @@ class AuthService {
 
     private async hashPassword(password: string) {
         return await bcrypt.hash(password, 3);
+    }
+
+    private async isUserExist(email: UserDto["email"]) {
+        const candidate = await User.findOne({where: {email}});
+        return !!candidate;
     }
 }
 
