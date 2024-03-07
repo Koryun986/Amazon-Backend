@@ -7,7 +7,7 @@ import mailService from "./mail-service";
 import { API_URL } from "../config/envirenmentVariables";
 import tokenService from "./token-service";
 import { Token } from "../database/models/token";
-import type { UserType } from "../types/auth-types";
+import type { LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
 
 class AuthService {
@@ -46,7 +46,27 @@ class AuthService {
             
             await transaction.rollback();
         }
+    }
 
+    async login(user: LoginUserType) {
+        const userEntity = await User.findOne({where: {email: user.email}});
+        if (!userEntity) {
+            throw new Error("User with this email doesn't exist");
+        }
+        const isPasswordsEqual = await bcrypt.compare(user.password, userEntity.password);
+        if (!isPasswordsEqual) {
+            throw new Error("Password isn't correct");
+        }
+        const userDto: UserDto = {first_name: userEntity.first_name, last_name: userEntity.last_name, email: userEntity.email};
+        const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
+        const token = await Token.findOne({where: {user_id: userEntity.id}});
+        token!.refresh_token = refreshToken;
+        await token?.save();
+        return {
+            ...userDto,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        };
     }
 
     async activate(activationLink: string) {

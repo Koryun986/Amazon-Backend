@@ -4,3 +4,5 @@ export type UserType = {
     email: string;
     password: string;
 }
+
+export type LoginUserType = Omit<UserType, "first_name" | "last_name">;
