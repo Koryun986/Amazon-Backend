@@ -4,6 +4,8 @@ import { User } from "../database/models/user";
 import type { UserType } from "../types/auth-types";
 import sequelize from "../database";
 import { UserActivationLink } from "../database/models/user-activation-link";
+import mailService from "./mail-service";
+import { API_URL } from "../config/envirenmentVariables";
 
 class AuthService {
     async createUser(user: UserType) {
@@ -16,7 +18,8 @@ class AuthService {
             const activationLink = uuid.v4();
             const userActivationLinkEntity = await UserActivationLink.create({activation_link: activationLink, user_id: userEntity.id})
             await userActivationLinkEntity.save();
-            
+            await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${activationLink}`);
+
             await transaction.commit();
         } catch (e) {
             await transaction.rollback();

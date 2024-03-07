@@ -2,7 +2,7 @@ import nodemailer from "nodemailer";
 import { SMTP_HOST, SMTP_PASSWORD, SMTP_PORT, SMTP_USER } from "../config/envirenmentVariables";
 
 class MailService {
-    transporter: nodemailer.Transporter;
+    private readonly transporter: nodemailer.Transporter;
 
     constructor() {
         this.transporter = nodemailer.createTransport({
