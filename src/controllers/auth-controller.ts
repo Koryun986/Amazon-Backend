@@ -29,6 +29,19 @@ class AuthController {
         }
     }
 
+    async changePassword(req: Request, res: Response, next: NextFunction) {
+        try {            
+            const accessToken = req.headers.authorization?.substring(7);
+            if (!accessToken) {
+                throw new Error("Anauthorized Error");
+            }
+            const data = await authService.changePassword(req.body, accessToken);
+            return res.json(data);
+        } catch (error) {
+            next(error);
+        }
+    }
+
     async refresh(req: Request, res: Response, next: NextFunction) {
         try {
             const {refresh_token} = req.cookies;

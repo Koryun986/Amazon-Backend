@@ -20,6 +20,15 @@ class TokenService {
             return null;
         }
     }
+
+    validateAccessToken(accessToken: string) {
+        try {            
+            const userDto = jwt.verify(accessToken, JWT_ACCESS_SECRET!);
+            return userDto;
+        } catch (e) {
+            return null;
+        }
+    }
 }
 
 export default new TokenService();

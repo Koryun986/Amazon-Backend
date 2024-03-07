@@ -7,7 +7,7 @@ import mailService from "./mail-service";
 import { API_URL } from "../config/envirenmentVariables";
 import tokenService from "./token-service";
 import { Token } from "../database/models/token";
-import type { LoginUserType, UserType } from "../types/auth-types";
+import type { ChangePasswordType, LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
 
 class AuthService {
@@ -23,7 +23,6 @@ class AuthService {
             await userEntity.save();
 
             const activationLink = v4();
-            console.log(activationLink);
             
             const userActivationLinkEntity = await UserActivationLink.create({activation_link: activationLink, user_id: userEntity.id})
             await userActivationLinkEntity.save();
@@ -41,9 +40,7 @@ class AuthService {
                 access_token: accessToken,
                 refresh_token: refreshToken,
             };
-        } catch (e) {
-            console.log(e);
-            
+        } catch (e) {            
             await transaction.rollback();
         }
     }
@@ -81,16 +78,54 @@ class AuthService {
         }
     }
 
+    async changePassword(changePasswordData: ChangePasswordType, accessToken: string) {
+        const userDto = tokenService.validateAccessToken(accessToken) as UserDto;
+        if (!userDto) {
+            throw new Error("UnAuthorized Error");
+        }
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        
+        const isPasswordsEqual = await bcrypt.compare(changePasswordData.password, userEntity.password);
+        if (!isPasswordsEqual) {
+            throw new Error("Current password is wrong");
+        }
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            const hashedNewPassword = await this.hashPassword(changePasswordData.new_password);
+            userEntity.password = hashedNewPassword;
+            await userEntity.save();
+            const newUserDto = this.getUserDtoFromEntity(userEntity);
+            const {accessToken, refreshToken} = tokenService.generateTokens(newUserDto);
+            const tokenEntity = await Token.findOne({where: {user_id: userEntity.id}});
+            if (!tokenEntity) {
+                const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
+                await tokenEntity.save();
+            } else {
+                tokenEntity.refresh_token = refreshToken;
+                await tokenEntity?.save();
+            }
+            await transaction.commit();
+            return {
+                ...newUserDto,
+                access_token: accessToken,
+                refresh_token: refreshToken,
+            };
+        } catch (e) {
+            await transaction.rollback();
+        }
+    }
+
     async refresh(refreshToken: string) {
         const transaction = await sequelize.startUnmanagedTransaction();
         if (!refreshToken) {
-            throw new Error("Login to your account 1");
+            throw new Error("Login to your account");
         }
         const userDto = tokenService.validateRefreshToken(refreshToken);
         const tokenEntity = await Token.findOne({where: {refresh_token: refreshToken}});
-        if (!userDto || !tokenEntity) {
-            console.log("userDto", userDto);
-            
+        if (!userDto || !tokenEntity) {            
             throw new Error("Login to your account");
         }
         try {

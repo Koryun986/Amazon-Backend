@@ -17,6 +17,7 @@ router.post(
     authController.registration,
 );
 router.post("/login", authController.login);
+router.post("/change-password", authController.changePassword);
 router.get("/refresh", authController.refresh);
 router.get("/activate/:link", authController.activate);
 

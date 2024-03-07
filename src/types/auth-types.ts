@@ -3,6 +3,11 @@ export type UserType = {
     last_name: string;
     email: string;
     password: string;
-}
+};
 
 export type LoginUserType = Omit<UserType, "first_name" | "last_name">;
+
+export type ChangePasswordType = {
+    password: string;
+    new_password: string;
+};
