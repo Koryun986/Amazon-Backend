@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import addressService from "./../services/address-service";
-import {getAccessTokenFromBearer} from "../utils/auth-helpers";
 
 class AddressController {
     async createAddresses(req: Request, res: Response, next: NextFunction) {
@@ -14,7 +13,8 @@ class AddressController {
 
     async getAddresses(req: Request, res: Response, next: NextFunction) {
         try {
-
+            const addresses = await addressService.getAddresses(req.user);
+            return res.json(addresses);
         } catch (e) {
             next(e);
         }

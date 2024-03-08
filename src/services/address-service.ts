@@ -34,6 +34,26 @@ class AddressService {
             await transaction.rollback();
         }
     }
+
+    async getAddresses(userDto: UserDto) {
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        const addressEntities: Address[] = await Address.findAll({where: {user_id: userEntity.id}});
+        if (!addressEntities) {
+            return [];
+        }
+        const addresses: AddressType[] = addressEntities.map(addressEntity => ({
+            country: addressEntity.country,
+            state: addressEntity.state,
+            city: addressEntity.city,
+            zip_code: addressEntity.zip_code,
+            street_address: addressEntity.street_address,
+            is_default_address: addressEntity.is_default_address
+        }));
+        return addresses;
+    }
 }
 
 export default new AddressService();
