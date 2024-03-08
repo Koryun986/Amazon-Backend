@@ -3,7 +3,7 @@
 .env
 .env*
 
-/seeders:q
+/seeders
 /config
 /models 
 /migrations
