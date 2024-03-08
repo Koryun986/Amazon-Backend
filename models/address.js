@@ -3,6 +3,7 @@ const {
   Model
 } = require('sequelize');
 const {User} = require("../src/database/models/user");
+const sequelize = require("../src/database");
 module.exports = (sequelize, DataTypes) => {
   class Address extends Model {
     /**
@@ -55,3 +56,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Address;
 };
+
+(async () => {
+  await sequelize.sync();
+})();
