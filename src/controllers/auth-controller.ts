@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { validationResult } from "express-validator";
 import authService from '../services/auth-service';
 import { CLIENT_URL, COOKIES_REFRESH_TOKEN } from '../config/envirenmentVariables';
+import {getAccessTokenFromBearer} from "../utils/auth-helpers";
 
 class AuthController {
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -31,7 +32,8 @@ class AuthController {
 
     async changePassword(req: Request, res: Response, next: NextFunction) {
         try {            
-            const accessToken = req.headers.authorization?.substring(7);
+            const accessToken = getAccessTokenFromBearer(req.headers.authorization!);
+            console.log("accessToken",accessToken);
             if (!accessToken) {
                 throw new Error("Anauthorized Error");
             }
