@@ -2,15 +2,11 @@ import tokenService from "./token-service";
 import {User} from "../database/models/user";
 import Address from "../../models/address";
 import type {AddressType} from "../types/address-types";
-import type{UserDto} from "../dtos/user-dto";
+import type {UserDto} from "../dtos/user-dto";
 import sequelize from "../database/index";
 
 class AddressService {
-    async createAddresses(addresses: AddressType[], accessToken: string) {
-        const userDto = tokenService.validateAccessToken(accessToken) as UserDto;
-        if (!userDto) {
-            throw new Error("UnAuthorized Error");
-        }
+    async createAddresses(addresses: AddressType[], userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw new Error("UnAuthorized Error");

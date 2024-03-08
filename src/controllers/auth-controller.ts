@@ -33,7 +33,6 @@ class AuthController {
     async changePassword(req: Request, res: Response, next: NextFunction) {
         try {            
             const accessToken = getAccessTokenFromBearer(req.headers.authorization!);
-            console.log("accessToken",accessToken);
             if (!accessToken) {
                 throw new Error("Anauthorized Error");
             }
