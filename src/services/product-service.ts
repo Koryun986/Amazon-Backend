@@ -119,6 +119,22 @@ class ProductService {
         }
     }
 
+    async deleteProduct(id: number, userDto: UserDto) {
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        console.log(id)
+        const productEntity = await Product.findByPk(id);
+        if (!productEntity) {
+            throw new Error("Product with this id doesn't exist");
+        }
+        if (productEntity.owner_id !== userEntity.id) {
+            throw new Error("Product doesn't belong you");
+        }
+        await productEntity.destroy();
+    }
+
     private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
         const categoryEntity = await Category.findOne({where: {name: category}});
         if (!categoryEntity) {

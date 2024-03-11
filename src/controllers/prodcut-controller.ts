@@ -33,7 +33,9 @@ class ProductController {
 
     async deleteProduct(req: Request, res: Response, next: NextFunction) {
         try {
-
+            //@ts-ignore
+            await productService.deleteProduct(req.body.id, req.user);
+            return res.json();
         } catch (e) {
             next(e);
         }
