@@ -4,6 +4,7 @@ import addressService from "./../services/address-service";
 class AddressController {
     async createAddresses(req: Request, res: Response, next: NextFunction) {
         try {
+            //@ts-ignore
             const addresses = await addressService.createAddresses(req.body, req.user);
             return res.json(addresses);
         } catch (e) {
@@ -13,6 +14,7 @@ class AddressController {
 
     async getAddresses(req: Request, res: Response, next: NextFunction) {
         try {
+            //@ts-ignore
             const addresses = await addressService.getAddresses(req.user);
             return res.json(addresses);
         } catch (e) {

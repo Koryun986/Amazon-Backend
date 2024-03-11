@@ -1,18 +1,40 @@
 'use strict';
+import {CreationOptional, InferAttributes, InferCreationAttributes, Optional} from "sequelize";
+
 const {
   Model
 } = require('sequelize');
 const {User} = require("../src/database/models/user");
 const sequelize = require("../src/database");
+
+interface AddressAttributes {
+  id?: number;
+  country: string;
+  state: string;
+  city: string;
+  zip_code: string;
+  street_address: string;
+  is_default_address?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface AddressesInput extends Optional<AddressAttributes, "id" | "createdAt" | "updatedAt"> {}
+
 module.exports = (sequelize, DataTypes) => {
   class Address extends Model {
-    /**
-     * Helper method for defining associations.
-     * This method is not a part of Sequelize lifecycle.
-     * The `models/index` file will call this method automatically.
-     */
+    // id!: number;
+    // country: string;
+    // state: string;
+    // city: string;
+    // zip_code: string;
+    // street_address: string;
+    // is_default_address: boolean;
+    //
+    // createdAt!: Date;
+    // updatedAt!:Date;
+
     static associate(models) {
-      User.hasMany(Address);
       Address.belongsTo(models.User, {
         foreignKey: "user_id",
       });
@@ -56,7 +78,7 @@ module.exports = (sequelize, DataTypes) => {
   });
   return Address;
 };
-
-(async () => {
-  await sequelize.sync();
-})();
+//
+// (async () => {
+//   await sequelize.sync();
+// })();

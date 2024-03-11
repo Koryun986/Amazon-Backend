@@ -1,9 +1,8 @@
-import tokenService from "./token-service";
+import sequelize from "../database/index";
 import {User} from "../database/models/user";
-import Address from "../../models/address";
+import {Address} from "../../models/address";
 import type {AddressType} from "../types/address-types";
 import type {UserDto} from "../dtos/user-dto";
-import sequelize from "../database/index";
 
 class AddressService {
     async createAddresses(addresses: AddressType[], userDto: UserDto) {

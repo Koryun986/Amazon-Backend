@@ -12,6 +12,7 @@ export function authGuard(req: Request, res: Response, next: NextFunction) {
         if (!userDto) {
             throw new Error("UnAuthorized Error");
         }
+        //@ts-ignore
         req.user = userDto;
         next();
     } catch (e) {

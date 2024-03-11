@@ -56,17 +56,7 @@ class AuthService {
             if (!isPasswordsEqual) {
                 throw new Error("Password isn't correct");
             }
-            const userDto = this.getUserDtoFromEntity(userEntity);
-            const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
-            const token = await Token.findOne({where: {user_id: userEntity.id}});
-            if (!token) {
-                const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
-                await tokenEntity.save();
-            } else {
-                token.refresh_token = refreshToken;
-                await token?.save();
-            }
-
+            const {userDto, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
             await transaction.commit();
             return {
                 ...userDto,
@@ -78,11 +68,7 @@ class AuthService {
         }
     }
 
-    async changePassword(changePasswordData: ChangePasswordType, accessToken: string) {
-        const userDto = tokenService.validateAccessToken(accessToken) as UserDto;
-        if (!userDto) {
-            throw new Error("UnAuthorized Error");
-        }
+    async changePassword(changePasswordData: ChangePasswordType, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
@@ -97,16 +83,7 @@ class AuthService {
             const hashedNewPassword = await this.hashPassword(changePasswordData.new_password);
             userEntity.password = hashedNewPassword;
             await userEntity.save();
-            const newUserDto = this.getUserDtoFromEntity(userEntity);
-            const {accessToken, refreshToken} = tokenService.generateTokens(newUserDto);
-            const tokenEntity = await Token.findOne({where: {user_id: userEntity.id}});
-            if (!tokenEntity) {
-                const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
-                await tokenEntity.save();
-            } else {
-                tokenEntity.refresh_token = refreshToken;
-                await tokenEntity?.save();
-            }
+            const {userDto: newUserDto, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
             await transaction.commit();
             return {
                 ...newUserDto,
@@ -168,7 +145,24 @@ class AuthService {
 
     private getUserDtoFromEntity(user: User) {
         return {first_name: user.first_name, last_name: user.last_name, email: user.email};
+    }
 
+    private async getTokensAndUserDtoFromUserEntity(userEntity: User) {
+        const userDto = this.getUserDtoFromEntity(userEntity);
+        const {accessToken, refreshToken} = tokenService.generateTokens(userDto);
+        const token = await Token.findOne({where: {user_id: userEntity.id}});
+        if (!token) {
+            const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
+            await tokenEntity.save();
+        } else {
+            token.refresh_token = refreshToken;
+            await token?.save();
+        }
+        return {
+            userDto,
+            accessToken,
+            refreshToken,
+        };
     }
 }
 
