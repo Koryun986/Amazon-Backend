@@ -4,6 +4,7 @@ import { User } from "./models/user";
 import { Token } from "./models/token";
 import { UserActivationLink } from "./models/user-activation-link";
 import {Address} from "./models/address";
+import {Product} from "./models/product";
 
 const sequelize = new Sequelize(
   DATABASE_NAME!,
@@ -13,7 +14,7 @@ const sequelize = new Sequelize(
   host: DATABASE_HOST,
   password: DATABASE_PASSWORD,
   dialect: "postgres",
-  models: [User, Token, UserActivationLink, Address]
+  models: [User, Token, UserActivationLink, Address, Product]
 });
 
 export default sequelize;
