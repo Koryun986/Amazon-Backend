@@ -43,10 +43,15 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
+    @Default(0)
     declare time_bought: number;
 
     @Attribute(DataTypes.FLOAT)
     @NotNull
     @Default(0)
     declare total_earnings: number;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare owner_id: number;
 }
