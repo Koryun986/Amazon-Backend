@@ -25,6 +25,16 @@ class CategoryService {
         return categoryEntity;
     }
 
+    async updateCategory(category: Category) {
+        const categoryEntity = await Category.findByPk(category.id);
+        if (!categoryEntity) {
+            throw new Error("Category with this id doesn't exist");
+        }
+        await categoryEntity.update(category);
+        await categoryEntity.save();
+        return categoryEntity;
+    }
+
     private getCategoriesStructured(categoryEntities: Category[]) {
         const categoryMap: { [id: number]: CategoryTreeItem } = {};
         const rootCategories: CategoryTreeItem[] = [];

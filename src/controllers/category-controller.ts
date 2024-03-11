@@ -19,6 +19,15 @@ class CategoryController {
             next(e);
         }
     }
+
+    async updateCategory(req: Request, res: Response, next: NextFunction) {
+        try {
+            const category = await categoryService.updateCategory(req.body);
+            return res.json(category);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new CategoryController();
