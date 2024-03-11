@@ -1,8 +1,8 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
 
-@Table({tableName: "Categories"})
-export class Category extends Model<InferAttributes<Category>, InferCreationAttributes<Category>> {
+@Table({tableName: "Colors"})
+export class Color extends Model<InferAttributes<Color>, InferCreationAttributes<Color>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement
@@ -12,6 +12,4 @@ export class Category extends Model<InferAttributes<Category>, InferCreationAttr
     @NotNull
     declare name: string;
 
-    @Attribute(DataTypes.INTEGER)
-    declare parent_id: CreationOptional<number>;
 }
