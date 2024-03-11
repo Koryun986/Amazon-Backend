@@ -19,5 +19,10 @@ router.delete(
     authGuard,
     productController.deleteProduct
 );
+router.post(
+    "/buy",
+    authGuard,
+    productController.buyProduct
+);
 
 export default router;

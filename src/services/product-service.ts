@@ -135,6 +135,16 @@ class ProductService {
         await productEntity.destroy();
     }
 
+    async buyProduct(id: number, times: number) {
+        const productEntity = await Product.findByPk(id);
+        if (!productEntity) {
+            throw new Error("Product with this id doesn't exist");
+        }
+        productEntity.time_bought += times;
+        productEntity.total_earnings += times*productEntity.price;
+        productEntity.save();
+    }
+
     private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
         const categoryEntity = await Category.findOne({where: {name: category}});
         if (!categoryEntity) {

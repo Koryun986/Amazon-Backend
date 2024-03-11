@@ -40,6 +40,15 @@ class ProductController {
             next(e);
         }
     }
+
+    async buyProduct(req: Request, res: Response, next: NextFunction) {
+        try {
+            await productService.buyProduct(req.body.id, req.body.times);
+            return res.json();
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new ProductController();
