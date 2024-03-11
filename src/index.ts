@@ -18,11 +18,15 @@ app.use(express.json());
 app.use("/auth/", authRouter);
 app.use("/addresses/", addressRouter);
 
-sequelize.sync().then(() => {
-    console.log("Connect to DB");
-    app.listen(PORT, () => {
-        console.log(`Server starts: ${PORT}`);    
-    });
-}).catch(() => {
-    console.log("Can't connect to DB");
-});
+const startServer = async () => {
+    try {
+        await sequelize.authenticate();
+        app.listen(PORT, () => {
+            console.log(`Server starts: ${PORT}`);
+        });
+    } catch (e) {
+        console.log(e);
+    }
+};
+
+startServer();

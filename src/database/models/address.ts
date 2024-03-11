@@ -1,5 +1,5 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/types/decorators/legacy";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
 import { User } from "./user";
 
 @Table({tableName: "Addresses"})
@@ -38,5 +38,3 @@ export class Address extends Model<InferAttributes<Address>, InferCreationAttrib
     @NotNull
     declare user_id: number;
 }
-
-Address.belongsTo(User);

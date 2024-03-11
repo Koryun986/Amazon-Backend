@@ -1,5 +1,5 @@
 import {Model, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes} from "@sequelize/core";
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/types/decorators/legacy";
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
 import {Address} from "./address";
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
@@ -29,5 +29,3 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
     @Default(false)
     declare is_activated: CreationOptional<boolean>;
 }
-
-User.hasMany(Address);
