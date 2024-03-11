@@ -9,7 +9,11 @@ router.post(
     authGuard,
     addressController.createAddresses
 );
-
+router.put(
+    "/update",
+    authGuard,
+    addressController.updateAddress
+)
 router.get(
     "/get-addresses",
     authGuard,

@@ -22,6 +22,15 @@ class AddressController {
         }
     }
 
+    async updateAddress(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const address = await addressService.updateAddress(req.body, req.user);
+            return res.json(address);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new AddressController();
