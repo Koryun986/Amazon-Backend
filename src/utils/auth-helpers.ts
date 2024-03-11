@@ -1,0 +1,1 @@
+export const getAccessTokenFromBearer = (bearer: string) => bearer.substring(7);

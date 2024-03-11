@@ -1,5 +1,5 @@
 import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "@sequelize/core";
-import { Attribute, PrimaryKey, AutoIncrement, NotNull } from '@sequelize/core/decorators-legacy';
+import { Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
 
 export class Token extends Model<InferAttributes<Token>, InferCreationAttributes<Token>> {
     @Attribute(DataTypes.INTEGER)

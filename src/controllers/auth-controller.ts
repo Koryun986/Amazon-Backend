@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { validationResult } from "express-validator";
 import authService from '../services/auth-service';
 import { CLIENT_URL, COOKIES_REFRESH_TOKEN } from '../config/envirenmentVariables';
+import {getAccessTokenFromBearer} from "../utils/auth-helpers";
+import {UserDto} from "../dtos/user-dto";
 
 class AuthController {
     async registration(req: Request, res: Response, next: NextFunction) {
@@ -30,12 +32,9 @@ class AuthController {
     }
 
     async changePassword(req: Request, res: Response, next: NextFunction) {
-        try {            
-            const accessToken = req.headers.authorization?.substring(7);
-            if (!accessToken) {
-                throw new Error("Anauthorized Error");
-            }
-            const data = await authService.changePassword(req.body, accessToken);
+        try {
+            //@ts-ignore
+            const data = await authService.changePassword(req.body, req.user);
             return res.json(data);
         } catch (error) {
             next(error);
