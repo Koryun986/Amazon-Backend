@@ -24,9 +24,18 @@ class AddressController {
 
     async updateAddress(req: Request, res: Response, next: NextFunction) {
         try {
-            //@ts-ignore
-            const address = await addressService.updateAddress(req.body, req.user);
+            const address = await addressService.updateAddress(req.body);
             return res.json(address);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async deleteAddress(req: Request, res: Response, next: NextFunction) {
+        try {
+            await addressService.deleteAddress(req.body);
+
+            return res.json();
         } catch (e) {
             next(e);
         }

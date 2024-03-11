@@ -50,11 +50,7 @@ class AddressService {
         return addresses;
     }
 
-    async updateAddress(address: AddressReturnType, userDto: UserDto) {
-        const userEntity = await User.findOne({where: {email: userDto.email}});
-        if (!userEntity) {
-            throw new Error("UnAuthorized Error");
-        }
+    async updateAddress(address: AddressReturnType) {
         const addressEntity = await Address.findByPk(address.id);
         if (!addressEntity) {
             throw new Error("Address with this id not found");
@@ -62,6 +58,14 @@ class AddressService {
         await addressEntity.update({...address});
         await addressEntity.save();
         return address;
+    }
+
+    async deleteAddress(id: number) {
+        const addressEntity = await Address.findByPk(id);
+        if (!addressEntity) {
+            throw new Error("Address with this id not found");
+        }
+        await addressEntity.destroy();
     }
 
     private async createAddress(address: AddressType) {

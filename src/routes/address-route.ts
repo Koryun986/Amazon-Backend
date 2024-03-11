@@ -19,5 +19,10 @@ router.get(
     authGuard,
     addressController.getAddresses
 );
+router.delete(
+    "/delete",
+    authGuard,
+    addressController.deleteAddress
+)
 
 export default router;
