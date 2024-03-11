@@ -33,7 +33,7 @@ class AddressController {
 
     async deleteAddress(req: Request, res: Response, next: NextFunction) {
         try {
-            await addressService.deleteAddress(req.body);
+            await addressService.deleteAddress(req.body.id);
 
             return res.json();
         } catch (e) {
