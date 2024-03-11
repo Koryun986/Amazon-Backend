@@ -1,8 +1,8 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
 
-@Table({tableName: "Colors"})
-export class Color extends Model<InferAttributes<Color>, InferCreationAttributes<Color>> {
+@Table({tableName: "Sizes"})
+export class Size extends Model<InferAttributes<Size>, InferCreationAttributes<Size>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement
