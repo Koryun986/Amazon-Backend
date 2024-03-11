@@ -2,7 +2,7 @@ import { Router } from "express";
 import { body } from "express-validator";
 import type { MinMaxOptions } from "express-validator/src/options";
 import authController from "../controllers/auth-controller";
-import {authGuard} from "../middlewares/auth-middleware";
+import {adminGuard, authGuard} from "../middlewares/auth-middleware";
 
 const router = Router();
 
@@ -25,5 +25,11 @@ router.post(
 );
 router.get("/refresh", authController.refresh);
 router.get("/activate/:link", authController.activate);
+router.post(
+    "/make-admin",
+    authGuard,
+    adminGuard,
+    authController.makeAdmin
+);
 
 export default router;

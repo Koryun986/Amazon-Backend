@@ -9,6 +9,7 @@ import tokenService from "./token-service";
 import { Token } from "../database/models/token";
 import type { ChangePasswordType, LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
+import {Admin} from "../database/models/admin";
 
 class AuthService {
     async createUser(user: UserType) {
@@ -132,6 +133,15 @@ class AuthService {
         } catch (e) {
             await transaction.rollback();
         }
+    }
+
+    async makeAdmin(newAdminId: number) {
+        const isAdminExist = await Admin.findOne({where: {user_id: newAdminId}});
+        if (isAdminExist) {
+            return;
+        }
+        const adminEntity = await Admin.create({user_id: newAdminId});
+        await adminEntity.save();
     }
 
     private async hashPassword(password: string) {

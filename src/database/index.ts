@@ -8,6 +8,7 @@ import { Product } from "./models/product";
 import { Category } from "./models/category";
 import { Color } from "./models/color";
 import { Size } from "./models/size";
+import {Admin} from "./models/admin";
 
 const sequelize = new Sequelize(
   DATABASE_NAME!,
@@ -20,7 +21,7 @@ const sequelize = new Sequelize(
   define: {
     timestamps: false
   },
-  models: [User, Token, UserActivationLink, Address, Product, Category, Color, Size]
+  models: [User, Token, UserActivationLink, Address, Product, Category, Color, Size, Admin]
 });
 
 export default sequelize;
