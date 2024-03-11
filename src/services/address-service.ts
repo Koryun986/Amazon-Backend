@@ -1,6 +1,6 @@
 import sequelize from "../database/index";
 import {User} from "../database/models/user";
-import {Address} from "../../models/address";
+import {Address} from "../database/models/address";
 import type {AddressType} from "../types/address-types";
 import type {UserDto} from "../dtos/user-dto";
 
