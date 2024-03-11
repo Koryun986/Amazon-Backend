@@ -1,7 +1,7 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
 
-@Table({tableName: "Products"})
+@Table({tableName: "Products", createdAt: false, updatedAt: false})
 export class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
