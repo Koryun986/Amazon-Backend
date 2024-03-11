@@ -9,5 +9,15 @@ router.post(
     authGuard,
     productController.createProduct
 );
+router.put(
+    "",
+    authGuard,
+    productController.updateProduct
+);
+router.delete(
+    "",
+    authGuard,
+    productController.deleteProduct
+);
 
 export default router;

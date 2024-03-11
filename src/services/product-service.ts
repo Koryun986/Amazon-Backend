@@ -59,18 +59,7 @@ class ProductService {
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
         }
-        const categoryEntity = await Category.findOne({where: {name: productDto.category}});
-        if (!categoryEntity) {
-            throw new Error("Category doesn't exist");
-        }
-        const sizeEntity = await Size.findOne({where: {name: productDto.size}});
-        if (!sizeEntity) {
-            throw new Error("Size doesn't exist");
-        }
-        const colorEntity = await Color.findOne({where: {name: productDto.color}});
-        if (!colorEntity) {
-            throw new Error("Color doesn't exist");
-        }
+        const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
         const productEntity = await Product.create({
             ...productDto,
             color_id: colorEntity.id,
@@ -93,6 +82,62 @@ class ProductService {
         }
     }
 
+    async updateProduct(product: ProductDto & {id: number}, userDto: UserDto): Promise<ProdcutReturnType> {
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        const productEntity = await Product.findByPk(product.id);
+        if (!productEntity) {
+            throw new Error("Product with this id doesn't exist");
+        }
+        if (productEntity.owner_id !== userEntity.id) {
+            throw new Error("Forbidden Error, try to change your products");
+        }
+        const { categoryEntity, sizeEntity, colorEntity } = await this.getEntitiesByNames({color: product.color, size: product.size, category: product.category});
+        await productEntity.update({
+            name: product.name,
+            description: product.description,
+            brand: product.brand,
+            price: product.price,
+            category_id: categoryEntity.id,
+            size_id: sizeEntity.id,
+            color_id: colorEntity.id,
+            is_published: !!product?.is_published,
+        });
+        await productEntity.save();
+        return {
+            ...product,
+            is_published: productEntity.is_published,
+            total_earnings: productEntity.total_earnings,
+            time_bought: productEntity.time_bought,
+            owner: {
+                first_name: userEntity.first_name,
+                last_name: userEntity.last_name,
+                email: userEntity.email
+            }
+        }
+    }
+
+    private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
+        const categoryEntity = await Category.findOne({where: {name: category}});
+        if (!categoryEntity) {
+            throw new Error("Category doesn't exist");
+        }
+        const sizeEntity = await Size.findOne({where: {name: size}});
+        if (!sizeEntity) {
+            throw new Error("Size doesn't exist");
+        }
+        const colorEntity = await Color.findOne({where: {name: color}});
+        if (!colorEntity) {
+            throw new Error("Color doesn't exist");
+        }
+        return {
+            categoryEntity,
+            sizeEntity,
+            colorEntity,
+        }
+    }
 }
 
 export default new ProductService();
