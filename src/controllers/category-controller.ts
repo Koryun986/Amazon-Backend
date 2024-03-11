@@ -28,6 +28,15 @@ class CategoryController {
             next(e);
         }
     }
+
+    async deleteCategory(req: Request, res: Response, next: NextFunction) {
+        try {
+            await categoryService.deleteCategory(req.body.id);
+            return res.json();
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new CategoryController();

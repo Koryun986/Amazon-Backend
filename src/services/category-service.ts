@@ -35,6 +35,14 @@ class CategoryService {
         return categoryEntity;
     }
 
+    async deleteCategory(id: number) {
+        const category = await Category.findByPk(id);
+        if (!category) {
+            throw new Error("Category with this id doesn't exist");
+        }
+        await category.destroy();
+    }
+
     private getCategoriesStructured(categoryEntities: Category[]) {
         const categoryMap: { [id: number]: CategoryTreeItem } = {};
         const rootCategories: CategoryTreeItem[] = [];

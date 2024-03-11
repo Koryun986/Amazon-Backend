@@ -7,5 +7,6 @@ const router = Router();
 router.get("/", categoryController.getCategories);
 router.post("/", authGuard, adminGuard, categoryController.createCategory);
 router.put("/", authGuard, adminGuard, categoryController.updateCategory);
+router.delete("/", authGuard, adminGuard, categoryController.deleteCategory);
 
 export default router;
