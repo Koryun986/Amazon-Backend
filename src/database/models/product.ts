@@ -28,6 +28,14 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @NotNull
     declare category_id: number;
 
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare color_id: number;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    declare size_id: number;
+
     @Attribute(DataTypes.BOOLEAN)
     @NotNull
     @Default(false)
