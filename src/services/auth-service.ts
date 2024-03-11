@@ -19,7 +19,7 @@ class AuthService {
         }
         try {
             const hashedPassword = await this.hashPassword(user.password);
-            const userEntity = await User.create({...user, password: hashedPassword, is_verfied: false});
+            const userEntity = await User.create({...user, password: hashedPassword, is_activated: false, });
             await userEntity.save();
 
             const activationLink = v4();

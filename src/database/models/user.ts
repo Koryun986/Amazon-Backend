@@ -1,6 +1,5 @@
 import {Model, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes} from "@sequelize/core";
 import { Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
-import {Address} from "./address";
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
     @Attribute(DataTypes.INTEGER)
