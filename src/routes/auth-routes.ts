@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { body } from "express-validator";
-import type { MinMaxOptions } from "express-validator/src/options";
 import authController from "../controllers/auth-controller";
 import {adminGuard, authGuard} from "../middlewares/auth-middleware";
+import type { MinMaxOptions } from "express-validator/src/options";
 
 const router = Router();
 

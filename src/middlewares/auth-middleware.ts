@@ -1,18 +1,27 @@
 import { Request, Response, NextFunction } from 'express';
 import tokenService from "./../services/token-service";
-import {getAccessTokenFromBearer} from "../utils/auth-helpers";
-import {User} from "../database/models/user";
-import {Admin} from "../database/models/admin";
+import { getAccessTokenFromBearer } from "../utils/auth-helpers";
+import { User } from "../database/models/user";
+import { Admin } from "../database/models/admin";
+import type { UserDto } from "../dtos/user-dto";
 
-export function authGuard(req: Request, res: Response, next: NextFunction) {
+export async function authGuard(req: Request, res: Response, next: NextFunction) {
     try {
         if (!req.headers.authorization) {
             throw new Error("UnAuthorized Error");
         }
         const accessToken = getAccessTokenFromBearer(req.headers.authorization);
-        const userDto = tokenService.validateAccessToken(accessToken);
+        const userDto = tokenService.validateAccessToken(accessToken) as UserDto;
         if (!userDto) {
             throw new Error("UnAuthorized Error");
+        }
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        if (!userEntity.is_activated) {
+            await userEntity.destroy();
+            throw new Error("Your email wasn't activated, please registrate again");
         }
         //@ts-ignore
         req.user = userDto;

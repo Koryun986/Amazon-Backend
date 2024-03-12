@@ -19,7 +19,9 @@ const sequelize = new Sequelize(
   password: DATABASE_PASSWORD,
   dialect: "postgres",
   define: {
-    timestamps: false
+    timestamps: false,
+    createdAt: false,
+    updatedAt: false,
   },
   models: [User, Token, UserActivationLink, Address, Product, Category, Color, Size, Admin]
 });
