@@ -10,6 +10,15 @@ class ColorController {
             next(e);
         }
     }
+
+    async createColor(req: Request, res: Response, next: NextFunction) {
+        try {
+            const color = await colorService.createColor(req.body.name);
+            return res.json(color);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new ColorController();
