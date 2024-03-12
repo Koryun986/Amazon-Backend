@@ -3,8 +3,6 @@ import { validationResult } from "express-validator";
 import authService from '../services/auth-service';
 import { CLIENT_URL, COOKIES_REFRESH_TOKEN } from '../config/envirenmentVariables';
 
-const COOKIE_OPTIONS: CookieOptions = {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true};
-
 class AuthController {
     async registration(req: Request, res: Response, next: NextFunction) {
         try {
