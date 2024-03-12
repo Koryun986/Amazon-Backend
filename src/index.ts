@@ -24,7 +24,7 @@ app.use("/addresses/", addressRouter);
 app.use("/products/", productRouter);
 app.use("/categories/", categoryRouter);
 app.use("/sizes/", sizeRouter);
-app.use("/color/", colorRouter);
+app.use("/colors/", colorRouter);
 
 const startServer = async () => {
     try {
