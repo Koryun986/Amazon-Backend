@@ -1,5 +1,4 @@
 import {Color} from "../database/models/color";
-import {Size} from "../database/models/size";
 
 class ColorService {
     async getColors() {
@@ -28,6 +27,15 @@ class ColorService {
         colorEntity.name = color.name;
         await colorEntity.save();
         return colorEntity;
+    }
+
+    async deleteColor(id: number) {
+        const colorEntity = await Color.findByPk(id);
+        if (!colorEntity) {
+            throw new Error("Color with this id doesn't exist");
+        }
+        await colorEntity.destroy();
+        return id;
     }
 }
 

@@ -17,5 +17,10 @@ router.put(
     adminGuard,
     colorController.updateColor,
 );
-
+router.delete(
+    "/delete",
+    authGuard,
+    adminGuard,
+    colorController.deleteColor,
+);
 export default router;
