@@ -17,4 +17,10 @@ router.put(
     adminGuard,
     sizeController.updateSize
 );
+router.delete(
+    "/delete",
+    authGuard,
+    adminGuard,
+    sizeController.deleteSize
+);
 export default router;

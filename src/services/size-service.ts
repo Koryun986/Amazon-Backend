@@ -28,6 +28,15 @@ class SizeService {
         await sizeEntity.save();
         return sizeEntity;
     }
+
+    async deleteSize(id: number) {
+        const sizeEntity = await Size.findByPk(id);
+        if (!sizeEntity) {
+            throw new Error("Size with this id doesn't exist");
+        }
+        await sizeEntity.destroy();
+        return id;
+    }
 }
 
 export default new SizeService();
