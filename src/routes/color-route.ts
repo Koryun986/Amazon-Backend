@@ -11,5 +11,11 @@ router.post(
     adminGuard,
     colorController.createColor,
 );
+router.put(
+    "/update",
+    authGuard,
+    adminGuard,
+    colorController.updateColor,
+);
 
 export default router;
