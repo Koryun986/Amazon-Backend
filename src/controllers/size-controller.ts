@@ -19,6 +19,15 @@ class SizeController {
             next(e);
         }
     }
+
+    async updateSize(req: Request, res: Response, next: NextFunction) {
+        try {
+            const size = await sizeService.updateSize(req.body);
+            return res.json(size);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new SizeController();

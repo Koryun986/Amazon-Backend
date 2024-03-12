@@ -11,4 +11,10 @@ router.post(
     adminGuard,
     sizeController.createSize
 );
+router.put(
+    "/update",
+    authGuard,
+    adminGuard,
+    sizeController.updateSize
+);
 export default router;
