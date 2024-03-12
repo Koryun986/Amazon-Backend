@@ -27,7 +27,8 @@ class AuthService {
             
             const userActivationLinkEntity = await UserActivationLink.create({activation_link: activationLink, user_id: userEntity.id})
             await userActivationLinkEntity.save();
-            await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${activationLink}`);
+            await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${userActivationLinkEntity.activation_link}`);
+            console.log("link", `${API_URL}/auth/activate/${userActivationLinkEntity.activation_link}`)
 
             const userDto = this.getUserDtoFromEntity(userEntity);
 
@@ -129,9 +130,16 @@ class AuthService {
     async activate(activationLink: string) {
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
+            console.log()
             const userActivationLinkEntity = await UserActivationLink.findOne({where: {activation_link: activationLink}});
-            const userEntity = await User.findByPk(userActivationLinkEntity?.id);
-            userEntity!.is_activated = true;
+            if (!userActivationLinkEntity) {
+                throw new Error("Your activation link is not found");
+            }
+            const userEntity = await User.findByPk(userActivationLinkEntity.user_id);
+            if (!userEntity) {
+                throw new Error("Your account doesn't found");
+            }
+            userEntity.is_activated = true;
             await userEntity?.save()
             await transaction.commit();
         } catch (e) {
