@@ -10,6 +10,15 @@ class SizeController {
             next(e);
         }
     }
+
+    async createSize(req: Request, res: Response, next: NextFunction) {
+        try {
+            const size = await sizeService.createSize(req.body.name);
+            return res.json(size);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new SizeController();
