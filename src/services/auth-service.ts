@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import {v4} from "uuid";
+import { v4 } from "uuid";
 import { User } from "../database/models/user";
 import sequelize from "../database";
 import { UserActivationLink } from "../database/models/user-activation-link";
@@ -7,14 +7,14 @@ import mailService from "./mail-service";
 import { API_URL } from "../config/envirenmentVariables";
 import tokenService from "./token-service";
 import { Token } from "../database/models/token";
+import { Admin } from "../database/models/admin";
 import type { ChangePasswordType, LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
-import {Admin} from "../database/models/admin";
 
 class AuthService {
     async createUser(user: UserType) {
         const transaction = await sequelize.startUnmanagedTransaction();
-        const isUserExist = await this.isUserExist(user.email)
+        const isUserExist = await this.isUserExist(user.email);
         if (isUserExist) {
             throw new Error("User with this email already exists");
         }
@@ -43,6 +43,7 @@ class AuthService {
             };
         } catch (e) {            
             await transaction.rollback();
+            throw new Error(e);
         }
     }
 
@@ -66,6 +67,7 @@ class AuthService {
             };
         } catch (e) {
             await transaction.rollback();
+            throw new Error(e);
         }
     }
 
@@ -93,6 +95,7 @@ class AuthService {
             };
         } catch (e) {
             await transaction.rollback();
+            throw new Error(e);
         }
     }
 
@@ -119,6 +122,7 @@ class AuthService {
             }
         } catch (e) {
             await transaction.rollback();
+            throw new Error(e);
         }
     }
 
@@ -132,6 +136,7 @@ class AuthService {
             await transaction.commit();
         } catch (e) {
             await transaction.rollback();
+            throw new Error(e);
         }
     }
 
