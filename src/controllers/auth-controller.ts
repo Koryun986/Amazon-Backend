@@ -61,6 +61,15 @@ class AuthController {
             next(error);
         }
     }
+
+    async makeAdmin(req: Request, res: Response, next: NextFunction) {
+        try {
+            await authService.makeAdmin(req.body.id);
+            return res.json();
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new AuthController();

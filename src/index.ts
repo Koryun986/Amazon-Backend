@@ -6,6 +6,8 @@ import sequelize from "./database";
 import authRouter from "./routes/auth-routes";
 import addressRouter from "./routes/address-route";
 import productRouter from "./routes/product-route";
+import categoryRouter from "./routes/category-route";
+import sizeRouter from "./routes/size-route";
 
 const app: Express = express();
 
@@ -19,6 +21,8 @@ app.use(express.json());
 app.use("/auth/", authRouter);
 app.use("/addresses/", addressRouter);
 app.use("/products/", productRouter);
+app.use("/categories/", categoryRouter);
+app.use("/sizes/", sizeRouter);
 
 const startServer = async () => {
     try {

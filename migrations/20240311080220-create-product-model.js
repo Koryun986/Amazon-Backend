@@ -67,7 +67,7 @@ module.exports = {
         }
       }
     });
-    await queryInterface.addConstraint('Products ', {
+    await queryInterface.addConstraint('Products', {
       fields: ['owner_id'],
       type: 'foreign key',
       name: 'user_id',
