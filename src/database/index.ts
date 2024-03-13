@@ -9,6 +9,7 @@ import { Category } from "./models/category";
 import { Color } from "./models/color";
 import { Size } from "./models/size";
 import {Admin} from "./models/admin";
+import {ProductImage} from "./models/product-images";
 
 const sequelize = new Sequelize(
   DATABASE_NAME!,
@@ -23,7 +24,7 @@ const sequelize = new Sequelize(
     createdAt: false,
     updatedAt: false,
   },
-  models: [User, Token, UserActivationLink, Address, Product, Category, Color, Size, Admin]
+  models: [User, Token, UserActivationLink, Address, Product, Category, Color, Size, Admin, ProductImage]
 });
 
 export default sequelize;

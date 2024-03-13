@@ -78,10 +78,10 @@ class ProductService {
                 owner_id: userEntity.id
             });
             await productEntity.save();
-            const mainImageEntity = await ProductImage.create({product_id: productEntity.id, is_main_image: true, image_url: mainImage.path});
+            const mainImageEntity = await ProductImage.create({image_url: mainImage.path, product_id: productEntity.id, is_main_image: true});
             await mainImageEntity.save();
             for(const image of images) {
-                const imageEntity = await ProductImage.create({product_id: productEntity.id, is_main_image: false, image_url: image.path});
+                const imageEntity = await ProductImage.create({image_url: image.path, product_id: productEntity.id, is_main_image: false});
                 await imageEntity.save();
             }
             await transaction.commit();

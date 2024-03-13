@@ -13,13 +13,17 @@ class ProductController {
 
     async createProduct(req: Request, res: Response, next: NextFunction) {
         try {
-            const mainImage = req.files["main-image"];
+            const mainImage = req.files["main-image"][0];
             if (!mainImage) {
                 throw new Error("Please provide main image");
             }
             const images = req.files["images"];
             const requestData = {
-                productDto: req.body,
+                productDto: {
+                    ...req.body,
+                    is_published: req.body.is_published === "true" ? true : false,
+                    price: +req.body.price,
+                },
                 mainImage,
                 images,
             };
