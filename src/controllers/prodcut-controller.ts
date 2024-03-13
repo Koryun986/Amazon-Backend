@@ -11,6 +11,23 @@ class ProductController {
         }
     }
 
+    async testCreate(req: Request, res: Response, next: NextFunction) {
+        try {
+            const mainImage = req.files["main-image"];
+            if (!mainImage) {
+                throw new Error("Please provide main image");
+            }
+            const images = req.files["images"];
+            return res.json({
+                body: req.body,
+                main_image: mainImage[0],
+                images
+            })
+        } catch (e) {
+            next(e);
+        }
+    }
+
     async createProduct(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
