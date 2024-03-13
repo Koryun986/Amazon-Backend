@@ -2,7 +2,7 @@ import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOpt
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
 
 @Table({tableName: "Product_Images"})
-export class ProductImages extends Model<InferAttributes<ProductImages>, InferCreationAttributes<ProductImages>> {
+export class ProductImage extends Model<InferAttributes<ProductImage>, InferCreationAttributes<ProductImage>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement

@@ -11,27 +11,20 @@ class ProductController {
         }
     }
 
-    async testCreate(req: Request, res: Response, next: NextFunction) {
+    async createProduct(req: Request, res: Response, next: NextFunction) {
         try {
             const mainImage = req.files["main-image"];
             if (!mainImage) {
                 throw new Error("Please provide main image");
             }
             const images = req.files["images"];
-            return res.json({
-                body: req.body,
-                main_image: mainImage[0],
-                images
-            })
-        } catch (e) {
-            next(e);
-        }
-    }
-
-    async createProduct(req: Request, res: Response, next: NextFunction) {
-        try {
+            const requestData = {
+                productDto: req.body,
+                mainImage,
+                images,
+            };
             //@ts-ignore
-            const product = await productService.createProduct(req.body, req.user);
+            const product = await productService.createProduct(requestData, req.user);
             return res.json(product);
         } catch (e) {
             next(e);
@@ -40,8 +33,18 @@ class ProductController {
 
     async updateProduct(req: Request, res: Response, next: NextFunction) {
         try {
+            const mainImage = req.files["main-image"];
+            if (!mainImage) {
+                throw new Error("Please provide main image");
+            }
+            const images = req.files["images"];
+            const requestData = {
+                productDto: req.body,
+                mainImage,
+                images,
+            };
             //@ts-ignore
-            const product = await productService.updateProduct(req.body, req.user);
+            const product = await productService.updateProduct(requestData, req.user);
             return res.json(product);
         } catch (e) {
             next(e);

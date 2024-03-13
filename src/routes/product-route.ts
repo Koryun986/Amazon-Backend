@@ -15,25 +15,23 @@ const upload = multer({
     }
 });
 
+router.get("", productController.getProducts);
 router.post(
-    "/test-create",
+    "",
     authGuard,
     upload.fields([
         { name: "main-image", maxCount: 1 },
         { name: "images", maxCount: 4 },
     ]),
-    productController.testCreate
-);
-
-router.get("", productController.getProducts);
-router.post(
-    "",
-    authGuard,
     productController.createProduct
 );
 router.put(
     "",
     authGuard,
+    upload.fields([
+        { name: "main-image", maxCount: 1 },
+        { name: "images", maxCount: 4 },
+    ]),
     productController.updateProduct
 );
 router.delete(
