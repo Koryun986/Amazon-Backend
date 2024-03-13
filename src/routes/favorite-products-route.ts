@@ -9,5 +9,10 @@ router.get(
     authGuard,
     favoriteProductsController.getFavorites
 );
+router.post(
+    "/add",
+    authGuard,
+    favoriteProductsController.addFavorite
+);
 
 export default router;

@@ -11,6 +11,16 @@ class FavoriteProductsController {
             next(e);
         }
     }
+
+    async addFavorite(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const favorite = await favoriteProductsService.addFavorite(req.body.id, req.user);
+            return res.json(favorite);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new FavoriteProductsController();
