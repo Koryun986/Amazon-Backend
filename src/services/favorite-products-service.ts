@@ -16,6 +16,13 @@ class FavoriteProductsService {
         return favoriteEntity;
     }
 
+    async removeFavorite(id: number, userDto: UserDto) {
+        const userEntity = await this.getUserEntityFromDto(userDto);
+        const favoriteEntity = await FavoriteProduct.findOne({where: {product_id: id, user_id: userEntity.id}});
+        await favoriteEntity.destroy();
+        return favoriteEntity.id;
+    }
+
     private async getUserEntityFromDto(userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {

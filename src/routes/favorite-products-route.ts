@@ -14,5 +14,10 @@ router.post(
     authGuard,
     favoriteProductsController.addFavorite
 );
+router.delete(
+    "/remove",
+    authGuard,
+    favoriteProductsController.removeFavorite
+);
 
 export default router;

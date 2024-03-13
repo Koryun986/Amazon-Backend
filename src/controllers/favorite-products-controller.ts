@@ -21,6 +21,16 @@ class FavoriteProductsController {
             next(e);
         }
     }
+
+    async removeFavorite(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const id = await favoriteProductsService.removeFavorite(req.body.id, req.user);
+            return res.json(id);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new FavoriteProductsController();
