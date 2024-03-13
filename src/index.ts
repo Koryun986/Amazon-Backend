@@ -9,6 +9,7 @@ import productRouter from "./routes/product-route";
 import categoryRouter from "./routes/category-route";
 import sizeRouter from "./routes/size-route";
 import colorRouter from "./routes/color-route";
+import favoriteProductsRouter from "./routes/favorite-products-route";
 
 const app: Express = express();
 
@@ -25,6 +26,7 @@ app.use("/products/", productRouter);
 app.use("/categories/", categoryRouter);
 app.use("/sizes/", sizeRouter);
 app.use("/colors/", colorRouter);
+app.use("/favorite-products/",favoriteProductsRouter);
 
 const startServer = async () => {
     try {
