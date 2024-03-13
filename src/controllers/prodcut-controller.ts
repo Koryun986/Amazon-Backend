@@ -37,7 +37,7 @@ class ProductController {
 
     async updateProduct(req: Request, res: Response, next: NextFunction) {
         try {
-            const mainImage = req.files["main-image"];
+            const mainImage = req.files["main-image"][0];
             if (!mainImage) {
                 throw new Error("Please provide main image");
             }
