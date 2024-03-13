@@ -1,6 +1,5 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
-import {Default} from "@sequelize/core/types/decorators/legacy";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
 
 @Table({tableName: "Product_Images"})
 export class ProductImages extends Model<InferAttributes<ProductImages>, InferCreationAttributes<ProductImages>> {
