@@ -1,26 +1,30 @@
+import sequelize from "../database";
 import {Product} from "../database/models/product";
 import {Category} from "../database/models/category";
 import {Color} from "../database/models/color";
 import {Size} from "../database/models/size";
 import {User} from "../database/models/user";
+import {ProductImage} from "../database/models/product-images";
 import type {ProductDto} from "../dtos/product-dto";
 import type {UserDto} from "../dtos/user-dto";
 
-type ProdcutReturnType = ProductDto & {
+type ProductReturnType = ProductDto & {
     id: number;
     total_earnings: number;
     time_bought: number;
     is_published: boolean;
+    main_image: string;
+    images: string[];
     owner: UserDto;
 }
 
 class ProductService {
-    async getProducts(): Promise<ProdcutReturnType[]> {
+    async getProducts(): Promise<ProductReturnType[]> {
         const products = await Product.findAll();
         if (!products) {
             return [];
         }
-        const productsReturnArray: ProdcutReturnType[] = [];
+        const productsReturnArray: ProductReturnType[] = [];
         for(const product of products) {
             if (!product.is_published) {
                 continue;
@@ -29,7 +33,9 @@ class ProductService {
             const colorEntity = await Color.findByPk(product.color_id);
             const sizeEntity = await Size.findByPk(product.size_id);
             const ownerEntity = await User.findByPk(product.owner_id);
-            if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity) {
+            const imageEntities = await ProductImage.findAll({where: {product_id: product.id, is_main_image: false}});
+            const mainImageEntity = await ProductImage.findOne({where: {product_id: product.id, is_main_image: true}});
+            if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity || !mainImageEntity) {
                 throw new Error("Something went wrong");
             }
             productsReturnArray.push({
@@ -44,6 +50,8 @@ class ProductService {
                 time_bought: product.time_bought,
                 is_published: product.is_published,
                 total_earnings: product.total_earnings,
+                main_image: mainImageEntity.image_url,
+                images: imageEntities.map(imageEntity => imageEntity.image_url),
                 owner: {
                     first_name: ownerEntity.first_name,
                     last_name: ownerEntity.last_name,
@@ -54,35 +62,50 @@ class ProductService {
         return productsReturnArray;
     }
 
-    async createProduct(productDto: ProductDto, user: UserDto): Promise<ProdcutReturnType> {
+    async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {
         const userEntity = await User.findOne({where: {email: user.email}});
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
         }
         const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
-        const productEntity = await Product.create({
-            ...productDto,
-            color_id: colorEntity.id,
-            size_id: sizeEntity.id,
-            category_id: categoryEntity.id,
-            owner_id: userEntity.id
-        });
-        await productEntity.save();
-        return {
-            ...productDto,
-            is_published: productEntity.is_published,
-            id: productEntity.id,
-            total_earnings: productEntity.total_earnings,
-            time_bought: productEntity.time_bought,
-            owner: {
-                last_name: userEntity.last_name,
-                first_name: userEntity.first_name,
-                email: userEntity.email,
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            const productEntity = await Product.create({
+                ...productDto,
+                color_id: colorEntity.id,
+                size_id: sizeEntity.id,
+                category_id: categoryEntity.id,
+                owner_id: userEntity.id
+            });
+            await productEntity.save();
+            const mainImageEntity = await ProductImage.create({product_id: productEntity.id, is_main_image: true, image_url: mainImage.path});
+            await mainImageEntity.save();
+            for(const image of images) {
+                const imageEntity = await ProductImage.create({product_id: productEntity.id, is_main_image: false, image_url: image.path});
+                await imageEntity.save();
             }
+            await transaction.commit();
+            return {
+                ...productDto,
+                is_published: productEntity.is_published,
+                id: productEntity.id,
+                total_earnings: productEntity.total_earnings,
+                time_bought: productEntity.time_bought,
+                main_image: mainImage.path,
+                images: images.map(image => image.path),
+                owner: {
+                    last_name: userEntity.last_name,
+                    first_name: userEntity.first_name,
+                    email: userEntity.email,
+                }
+            }
+        } catch (e) {
+            await transaction.rollback();
+            throw new Error(e);
         }
     }
 
-    async updateProduct(product: ProductDto & {id: number}, userDto: UserDto): Promise<ProdcutReturnType> {
+    async updateProduct({ productDto: product, images, mainImage }: { productDto: ProductDto & {id: number}, mainImage: Express.Multer.File, images: Express.Multer.File[] }, userDto: UserDto): Promise<ProductReturnType> {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
@@ -95,27 +118,53 @@ class ProductService {
             throw new Error("Forbidden Error, try to change your products");
         }
         const { categoryEntity, sizeEntity, colorEntity } = await this.getEntitiesByNames({color: product.color, size: product.size, category: product.category});
-        await productEntity.update({
-            name: product.name,
-            description: product.description,
-            brand: product.brand,
-            price: product.price,
-            category_id: categoryEntity.id,
-            size_id: sizeEntity.id,
-            color_id: colorEntity.id,
-            is_published: !!product?.is_published,
-        });
-        await productEntity.save();
-        return {
-            ...product,
-            is_published: productEntity.is_published,
-            total_earnings: productEntity.total_earnings,
-            time_bought: productEntity.time_bought,
-            owner: {
-                first_name: userEntity.first_name,
-                last_name: userEntity.last_name,
-                email: userEntity.email
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            await productEntity.update({
+                name: product.name,
+                description: product.description,
+                brand: product.brand,
+                price: product.price,
+                category_id: categoryEntity.id,
+                size_id: sizeEntity.id,
+                color_id: colorEntity.id,
+                is_published: !!product?.is_published,
+            });
+            await productEntity.save();
+            let mainImageEntity = await ProductImage.findOne({where: {product_id: productEntity.id, is_main_image: true}});
+            if (!mainImageEntity) {
+                mainImageEntity = await ProductImage.create({product_id: productEntity.id, is_main_image: true, image_url: mainImage.path});
             }
+            await mainImageEntity.save();
+            const imageEntities = await ProductImage.findAll({where: {product_id: productEntity.id, is_main_image: false}});
+            const imagePaths = [];
+            for(let i = 0; i < images.length; i++) {
+                if (!imageEntities[i]) {
+                    const imageEntity = await ProductImage.create({product_id: productEntity.id, image_url: images[i].path, is_main_image: false});
+                    await imageEntity.save();
+                    continue;
+                }
+                imageEntities[i].image_url = images[i].path;
+                await imageEntities[i].save();
+                imagePaths.push(images[i]);
+            }
+            await transaction.commit();
+            return {
+                ...product,
+                is_published: productEntity.is_published,
+                total_earnings: productEntity.total_earnings,
+                time_bought: productEntity.time_bought,
+                images: imagePaths,
+                main_image: mainImageEntity.image_url,
+                owner: {
+                    first_name: userEntity.first_name,
+                    last_name: userEntity.last_name,
+                    email: userEntity.email
+            }
+        }
+        } catch (e) {
+            await transaction.rollback();
+            throw new Error(e);
         }
     }
 
@@ -124,7 +173,6 @@ class ProductService {
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
         }
-        console.log(id)
         const productEntity = await Product.findByPk(id);
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
@@ -142,7 +190,7 @@ class ProductService {
         }
         productEntity.time_bought += times;
         productEntity.total_earnings += times*productEntity.price;
-        productEntity.save();
+        await productEntity.save();
     }
 
     private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
