@@ -14,6 +14,11 @@ router.post(
     authGuard,
     favoriteProductsController.addFavorite
 );
+router.post(
+    "/add-many",
+    authGuard,
+    favoriteProductsController.addFavorites
+);
 router.delete(
     "/remove",
     authGuard,
