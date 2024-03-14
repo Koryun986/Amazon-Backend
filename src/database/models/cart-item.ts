@@ -1,12 +1,18 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
+import {Default} from "@sequelize/core/types/decorators/legacy";
 
-@Table({tableName: "Favorite_Products", createdAt: false, updatedAt: false})
-export class FavoriteProduct extends Model<InferAttributes<FavoriteProduct>, InferCreationAttributes<FavoriteProduct>> {
+@Table({tableName: "Cart_Items", createdAt: false, updatedAt: false})
+export class CartItem extends Model<InferAttributes<CartItem>, InferCreationAttributes<CartItem>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
     @AutoIncrement
     declare id: CreationOptional<number>;
+
+    @Attribute(DataTypes.INTEGER)
+    @NotNull
+    @Default(1)
+    declare count: number;
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
