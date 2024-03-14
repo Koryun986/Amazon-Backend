@@ -28,7 +28,7 @@ app.use("/categories/", categoryRouter);
 app.use("/sizes/", sizeRouter);
 app.use("/colors/", colorRouter);
 app.use("/favorite-products/",favoriteProductsRouter);
-app.use("cart-items/", cartItemsRouter);
+app.use("/cart-items/", cartItemsRouter);
 
 const startServer = async () => {
     try {
