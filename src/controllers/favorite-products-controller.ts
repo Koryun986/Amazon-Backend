@@ -22,6 +22,16 @@ class FavoriteProductsController {
         }
     }
 
+    async addFavorites(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const favorites = await favoriteProductsService.addFavorites(req.body, req.user);
+            return res.json(favorites);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     async removeFavorite(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
