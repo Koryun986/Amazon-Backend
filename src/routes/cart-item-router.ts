@@ -14,6 +14,11 @@ router.post(
     authGuard,
     cartItemController.addCartItem
 );
+router.post(
+    "/add-many",
+    authGuard,
+    cartItemController.addCartItems
+);
 router.delete(
     "/remove",
     authGuard,

@@ -22,6 +22,16 @@ class CartItemController {
         }
     }
 
+    async addCartItems(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const cartItems = await cartItemService.addCartItems(req.body, req.user);
+            return res.json(cartItems);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     async removeCartItem(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
