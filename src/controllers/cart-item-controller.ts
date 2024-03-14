@@ -11,6 +11,16 @@ class CartItemController {
             next(e);
         }
     }
+
+    async addCartItem(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const cartItem = await cartItemService.addCartItem(req.body, req.user);
+            return res.json(cartItem);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new CartItemController();

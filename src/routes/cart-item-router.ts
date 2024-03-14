@@ -10,4 +10,10 @@ router.get(
     cartItemController.getCartItems
 );
 
+router.post(
+    "/add",
+    authGuard,
+    cartItemController.addCartItem
+);
+
 export default router;
