@@ -21,6 +21,16 @@ class CartItemController {
             next(e);
         }
     }
+
+    async removeCartItem(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const id = await cartItemService.removeCartItem(req.body.id, req.user);
+            return res.json(id);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new CartItemController();

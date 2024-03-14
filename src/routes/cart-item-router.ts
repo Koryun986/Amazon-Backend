@@ -9,11 +9,15 @@ router.get(
     authGuard,
     cartItemController.getCartItems
 );
-
 router.post(
     "/add",
     authGuard,
     cartItemController.addCartItem
+);
+router.delete(
+    "/remove",
+    authGuard,
+    cartItemController.removeCartItem
 );
 
 export default router;
