@@ -41,7 +41,9 @@ class AuthController {
 
     async refresh(req: Request, res: Response, next: NextFunction) {
         try {
+            console.log(req.cookies.refresh_token);
             const {refresh_token} = req.cookies;
+            console.log("refresh_token", refresh_token)
             const data = await authService.refresh(refresh_token);
             res.cookie(COOKIES_REFRESH_TOKEN, data?.refresh_token,  {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
             return res.json(data);
@@ -64,6 +66,18 @@ class AuthController {
         try {
             await authService.makeAdmin(req.body.id);
             return res.json();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getUser(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log("req")
+            //@ts-ignore
+            const data = await authService.getUser(req.user);
+            console.log("data", data)
+            return res.json(data);
         } catch (error) {
             next(error);
         }

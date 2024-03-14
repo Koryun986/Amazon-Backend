@@ -21,7 +21,7 @@ export async function authGuard(req: Request, res: Response, next: NextFunction)
         }
         if (!userEntity.is_activated) {
             await userEntity.destroy();
-            throw new Error("Your email wasn't activated, please registrate again");
+            throw new Error("Your email wasn't activated, please register again");
         }
         //@ts-ignore
         req.user = userDto;

@@ -13,22 +13,20 @@ import type { UserDto } from "../dtos/user-dto";
 
 class AuthService {
     async createUser(user: UserType) {
-        const transaction = await sequelize.startUnmanagedTransaction();
         const isUserExist = await this.isUserExist(user.email);
         if (isUserExist) {
             throw new Error("User with this email already exists");
         }
+        const transaction = await sequelize.startUnmanagedTransaction();
         try {
             const hashedPassword = await this.hashPassword(user.password);
             const userEntity = await User.create({...user, password: hashedPassword, is_activated: false, });
             await userEntity.save();
-
             const activationLink = v4();
             
             const userActivationLinkEntity = await UserActivationLink.create({activation_link: activationLink, user_id: userEntity.id})
             await userActivationLinkEntity.save();
             await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${userActivationLinkEntity.activation_link}`);
-            console.log("link", `${API_URL}/auth/activate/${userActivationLinkEntity.activation_link}`)
 
             const userDto = this.getUserDtoFromEntity(userEntity);
 
@@ -101,15 +99,15 @@ class AuthService {
     }
 
     async refresh(refreshToken: string) {
-        const transaction = await sequelize.startUnmanagedTransaction();
         if (!refreshToken) {
             throw new Error("Login to your account");
         }
         const userDto = tokenService.validateRefreshToken(refreshToken);
         const tokenEntity = await Token.findOne({where: {refresh_token: refreshToken}});
-        if (!userDto || !tokenEntity) {            
+        if (!userDto || !tokenEntity) {
             throw new Error("Login to your account");
         }
+        const transaction = await sequelize.startUnmanagedTransaction();
         try {
             const userEntity = await User.findByPk(tokenEntity.user_id);
             const validUserDto = this.getUserDtoFromEntity(userEntity!);
@@ -155,6 +153,19 @@ class AuthService {
         }
         const adminEntity = await Admin.create({user_id: newAdminId});
         await adminEntity.save();
+    }
+
+    async getUser(userDto: UserDto) {
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        const {userDto: user, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
+        return {
+            ...user,
+            access_token: accessToken,
+            refresh_token: refreshToken,
+        }
     }
 
     private async hashPassword(password: string) {

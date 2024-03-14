@@ -1,7 +1,7 @@
 import express, { Express } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { PORT } from "./config/envirenmentVariables";
+import {CLIENT_URL, PORT} from "./config/envirenmentVariables";
 import sequelize from "./database";
 import authRouter from "./routes/auth-routes";
 import addressRouter from "./routes/address-route";
@@ -15,7 +15,7 @@ import cartItemsRouter from "./routes/cart-item-router";
 const app: Express = express();
 
 app.use(cors({
-    origin: "*",
+    origin: CLIENT_URL,
     credentials: true,
 }));
 app.use(cookieParser());

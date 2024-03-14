@@ -11,6 +11,11 @@ const passwordValidationOptions: MinMaxOptions = {
     max: 32,
 };
 
+router.get(
+    "/get-user",
+    authGuard,
+    authController.getUser
+);
 router.post(
     "/registration",
     body("email").isEmail(),
