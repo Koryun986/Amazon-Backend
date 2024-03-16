@@ -7,6 +7,7 @@ import {User} from "../database/models/user";
 import {ProductImage} from "../database/models/product-images";
 import type {ProductDto} from "../dtos/product-dto";
 import type {UserDto} from "../dtos/user-dto";
+import {extractRelativePath} from "../utils/file-helpers";
 
 type ProductReturnType = ProductDto & {
     id: number;
@@ -20,7 +21,7 @@ type ProductReturnType = ProductDto & {
 
 class ProductService {
     async getProducts(): Promise<ProductReturnType[]> {
-        const products = await Product.findAll();
+        const products = await Product.findAll({where: {is_published: true}});
         if (!products) {
             return [];
         }
@@ -50,8 +51,8 @@ class ProductService {
                 time_bought: product.time_bought,
                 is_published: product.is_published,
                 total_earnings: product.total_earnings,
-                main_image: mainImageEntity.image_url,
-                images: imageEntities.map(imageEntity => imageEntity.image_url),
+                main_image: extractRelativePath(mainImageEntity.image_url),
+                images: imageEntities.map(imageEntity => extractRelativePath(imageEntity.image_url)),
                 owner: {
                     first_name: ownerEntity.first_name,
                     last_name: ownerEntity.last_name,
@@ -78,6 +79,7 @@ class ProductService {
                 owner_id: userEntity.id
             });
             await productEntity.save();
+
             const mainImageEntity = await ProductImage.create({image_url: mainImage.path, product_id: productEntity.id, is_main_image: true});
             await mainImageEntity.save();
             for(const image of images) {

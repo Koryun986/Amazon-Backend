@@ -21,6 +21,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
+app.use("/public/", express.static("public"));
 app.use("/auth/", authRouter);
 app.use("/addresses/", addressRouter);
 app.use("/products/", productRouter);
