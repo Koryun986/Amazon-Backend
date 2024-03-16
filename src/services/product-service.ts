@@ -8,6 +8,8 @@ import {ProductImage} from "../database/models/product-images";
 import type {ProductDto} from "../dtos/product-dto";
 import type {UserDto} from "../dtos/user-dto";
 import {extractRelativePath} from "../utils/file-helpers";
+import {ProductParams} from "../types/product-params-type";
+import {Op} from "@sequelize/core";
 
 type ProductReturnType = ProductDto & {
     id: number;
@@ -20,8 +22,8 @@ type ProductReturnType = ProductDto & {
 }
 
 class ProductService {
-    async getProducts(): Promise<ProductReturnType[]> {
-        const products = await Product.findAll({where: {is_published: true}});
+    async getProducts(params: object = {}): Promise<ProductReturnType[]> {
+        const products = await Product.findAll({where: {is_published: true, ...params}});
         if (!products) {
             return [];
         }
@@ -61,6 +63,38 @@ class ProductService {
             });
         }
         return productsReturnArray;
+    }
+
+    async getProductsByParams(params: ProductParams): Promise<ProductReturnType[]> {
+        const query: any = {};
+        if (params.text) {
+            query[Op.or] = {
+                name: {
+                    [Op.substring]: params.text
+                },
+                description: {
+                    [Op.substring]: params.text
+                },
+                brand: {
+                    [Op.substring]: params.text
+                },
+            }
+        }
+        if (params.max_price) {
+            query.price = {
+                [Op.between]: [0, +params.max_price]
+            }
+        }
+        if (params.size) {
+            query.size_id = +params.size;
+        }
+        if (params.color) {
+            query.color_id = +params.color;
+        }
+        if (params.category) {
+            query.category_id = +params.category;
+        }
+        return await this.getProducts(query);
     }
 
     async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {

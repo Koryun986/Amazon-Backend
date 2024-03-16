@@ -14,7 +14,6 @@ const upload = multer({
         callback(null, true);
     }
 });
-
 router.get("", productController.getProducts);
 router.post(
     "",

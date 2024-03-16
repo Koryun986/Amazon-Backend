@@ -4,7 +4,13 @@ import productService from "../services/product-service";
 class ProductController {
     async getProducts(req: Request, res: Response, next: NextFunction) {
         try {
-            const products = await productService.getProducts();
+            const params = req.query;
+            let products;
+            if (!params) {
+                products = await productService.getProducts();
+            } else {
+                products = await productService.getProductsByParams(params);
+            }
             return res.json(products);
         } catch (e) {
             next(e);
