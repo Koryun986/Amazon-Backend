@@ -55,9 +55,25 @@ class AddressService {
         if (!addressEntity) {
             throw new Error("Address with this id not found");
         }
-        await addressEntity.update({...address});
-        await addressEntity.save();
-        return address;
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            if (address.is_default_address && !addressEntity.is_default_address) {
+                const defaultAddresses = await Address.findAll({where: {user_id: addressEntity.user_id, is_default_address: true}});
+                if (defaultAddresses.length) {
+                    for(const defaultAddress of defaultAddresses) {
+                        defaultAddress.is_default_address = false;
+                        await defaultAddress.save();
+                    }
+                }
+            }
+            await addressEntity.update({...address});
+            await addressEntity.save();
+            await transaction.commit();
+            return address;
+        } catch (e) {
+            await transaction.rollback();
+            throw new Error(e);
+        }
     }
 
     async deleteAddress(id: number) {
