@@ -5,9 +5,9 @@ import {authGuard} from "../middlewares/auth-middleware";
 const router = Router();
 
 router.post(
-    "/create-addresses",
+    "/create",
     authGuard,
-    addressController.createAddresses
+    addressController.createAddress
 );
 router.put(
     "/update",

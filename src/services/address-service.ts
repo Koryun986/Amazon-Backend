@@ -7,26 +7,22 @@ import type { UserDto } from "../dtos/user-dto";
 type AddressReturnType = AddressType & { id: number };
 
 class AddressService {
-    async createAddresses(addresses: AddressType[], userDto: UserDto) {
+    async createAddress(address: AddressType, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
         }
-        if (!addresses.length) {
-            throw new Error("Please provide addresses");
-        }
-        const transaction = await sequelize.startUnmanagedTransaction();
-        try {
-            const addressReturnObjects: Array<AddressReturnType> = [];
-            for(const address of addresses) {
-                const addressEntity = await this.createAddress(address, userEntity.id);
-                addressReturnObjects.push({...address, is_default_address: addressEntity.is_default_address, id: addressEntity.id});
-            }
-            await transaction.commit();
-            return addressReturnObjects;
-        } catch (e) {
-            await transaction.rollback();
-        }
+        const addressEntity = await Address.create({
+            country: address.country,
+            state: address.state,
+            city: address.city,
+            zip_code: address.zip_code,
+            street_address: address.street_address,
+            is_default_address: address?.is_default_address ? address.is_default_address : false,
+            user_id: userEntity.id,
+        });
+        await addressEntity.save();
+        return addressEntity;
     }
 
     async getAddresses(userDto: UserDto) {
@@ -83,21 +79,6 @@ class AddressService {
         }
         await addressEntity.destroy();
     }
-
-    private async createAddress(address: AddressType, userId: number) {
-        const addressEntity = await Address.create({
-            country: address.country,
-            state: address.state,
-            city: address.city,
-            zip_code: address.zip_code,
-            street_address: address.street_address,
-            is_default_address: address?.is_default_address ? address.is_default_address : false,
-            user_id: userId,
-        });
-        await addressEntity.save();
-        return addressEntity;
-    }
-
 }
 
 export default new AddressService();

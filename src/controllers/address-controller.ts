@@ -2,10 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import addressService from "./../services/address-service";
 
 class AddressController {
-    async createAddresses(req: Request, res: Response, next: NextFunction) {
+    async createAddress(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
-            const addresses = await addressService.createAddresses(req.body, req.user);
+            const addresses = await addressService.createAddress(req.body, req.user);
             return res.json(addresses);
         } catch (e) {
             next(e);
