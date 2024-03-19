@@ -35,7 +35,7 @@ class CartItemController {
     async removeCartItem(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
-            const id = await cartItemService.removeCartItem(req.body.id, req.user);
+            const id = await cartItemService.removeCartItem(+req.params.id, req.user);
             return res.json(id);
         } catch (e) {
             next(e);

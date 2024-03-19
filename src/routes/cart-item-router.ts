@@ -20,7 +20,7 @@ router.post(
     cartItemController.addCartItems
 );
 router.delete(
-    "/remove",
+    "/remove/:id",
     authGuard,
     cartItemController.removeCartItem
 );
