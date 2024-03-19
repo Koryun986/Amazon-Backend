@@ -5,8 +5,8 @@ class AddressController {
     async createAddress(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
-            const addresses = await addressService.createAddress(req.body, req.user);
-            return res.json(addresses);
+            const address = await addressService.createAddress(req.body, req.user);
+            return res.json(address);
         } catch (e) {
             next(e);
         }
@@ -33,8 +33,7 @@ class AddressController {
 
     async deleteAddress(req: Request, res: Response, next: NextFunction) {
         try {
-            await addressService.deleteAddress(req.body.id);
-
+            await addressService.deleteAddress(+req.params.id);
             return res.json();
         } catch (e) {
             next(e);

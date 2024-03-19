@@ -17,6 +17,14 @@ class ProductController {
         }
     }
 
+    async getProductById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const product = await productService.getProductById(req.params.id);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     async createProduct(req: Request, res: Response, next: NextFunction) {
         try {
             const mainImage = req.files["main-image"][0];

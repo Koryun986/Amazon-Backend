@@ -20,7 +20,7 @@ router.get(
     addressController.getAddresses
 );
 router.delete(
-    "/delete",
+    "/delete/:id",
     authGuard,
     addressController.deleteAddress
 )

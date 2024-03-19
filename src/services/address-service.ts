@@ -3,6 +3,7 @@ import { User } from "../database/models/user";
 import { Address } from "../database/models/address";
 import type { AddressType } from "../types/address-types";
 import type { UserDto } from "../dtos/user-dto";
+import {userInfo} from "os";
 
 type AddressReturnType = AddressType & { id: number };
 
@@ -12,6 +13,7 @@ class AddressService {
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
         }
+        await this.changeDefaultAddressesToNormal(userEntity.id);
         const addressEntity = await Address.create({
             country: address.country,
             state: address.state,
@@ -54,13 +56,7 @@ class AddressService {
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
             if (address.is_default_address && !addressEntity.is_default_address) {
-                const defaultAddresses = await Address.findAll({where: {user_id: addressEntity.user_id, is_default_address: true}});
-                if (defaultAddresses.length) {
-                    for(const defaultAddress of defaultAddresses) {
-                        defaultAddress.is_default_address = false;
-                        await defaultAddress.save();
-                    }
-                }
+                await this.changeDefaultAddressesToNormal(addressEntity.user_id);
             }
             await addressEntity.update({...address});
             await addressEntity.save();
@@ -78,6 +74,16 @@ class AddressService {
             throw new Error("Address with this id not found");
         }
         await addressEntity.destroy();
+    }
+
+    private async changeDefaultAddressesToNormal(userId: number) {
+        const defaultAddresses = await Address.findAll({where: {user_id: userId, is_default_address: true}});
+        if (defaultAddresses.length) {
+            for(const defaultAddress of defaultAddresses) {
+                defaultAddress.is_default_address = false;
+                await defaultAddress.save();
+            }
+        }
     }
 }
 

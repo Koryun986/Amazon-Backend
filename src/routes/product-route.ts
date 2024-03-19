@@ -15,6 +15,7 @@ const upload = multer({
     }
 });
 router.get("", productController.getProducts);
+router.get("/:id", productController.getProductById)
 router.post(
     "",
     authGuard,

@@ -31,7 +31,7 @@ class ColorController {
 
     async deleteColor(req: Request, res: Response, next: NextFunction) {
         try {
-            const id = await colorService.deleteColor(req.body.id);
+            const id = await colorService.deleteColor(+req.params.id);
             return res.json(id);
         } catch (e) {
             next(e);

@@ -18,7 +18,7 @@ router.put(
     sizeController.updateSize
 );
 router.delete(
-    "/delete",
+    "/delete/:id",
     authGuard,
     adminGuard,
     sizeController.deleteSize

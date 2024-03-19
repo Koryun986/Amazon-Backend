@@ -18,7 +18,7 @@ router.put(
     colorController.updateColor,
 );
 router.delete(
-    "/delete",
+    "/delete/:id",
     authGuard,
     adminGuard,
     colorController.deleteColor,

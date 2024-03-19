@@ -31,7 +31,7 @@ class SizeController {
 
     async deleteSize(req: Request, res: Response, next: NextFunction) {
         try {
-            const id = await sizeService.deleteSize(req.body.id);
+            const id = await sizeService.deleteSize(+req.params.id);
             return res.json(id);
         } catch (e) {
             next(e);

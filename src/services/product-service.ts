@@ -32,12 +32,7 @@ class ProductService {
             if (!product.is_published) {
                 continue;
             }
-            const categoryEntity = await Category.findByPk(product.category_id);
-            const colorEntity = await Color.findByPk(product.color_id);
-            const sizeEntity = await Size.findByPk(product.size_id);
-            const ownerEntity = await User.findByPk(product.owner_id);
-            const imageEntities = await ProductImage.findAll({where: {product_id: product.id, is_main_image: false}});
-            const mainImageEntity = await ProductImage.findOne({where: {product_id: product.id, is_main_image: true}});
+            const { categoryEntity, colorEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(product);
             if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity || !mainImageEntity) {
                 throw new Error("Something went wrong");
             }
@@ -95,6 +90,34 @@ class ProductService {
             query.category_id = +params.category;
         }
         return await this.getProducts(query);
+    }
+
+    async getProductById(id: number): Promise<ProductReturnType> {
+        const productEntity = await Product.findOne({where: {id, is_published: true}});
+        if (!productEntity) {
+            throw new Error("Product with this id doesn't exist");
+        }
+        const { colorEntity, categoryEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(productEntity);
+        return {
+            id: productEntity.id,
+            name: productEntity.name,
+            description: productEntity.description,
+            brand: productEntity.brand,
+            price: productEntity.price,
+            category: categoryEntity.name,
+            color: colorEntity.name,
+            size: sizeEntity.name,
+            time_bought: productEntity.time_bought,
+            is_published: productEntity.is_published,
+            total_earnings: productEntity.total_earnings,
+            main_image: extractRelativePath(mainImageEntity.image_url),
+            images: imageEntities.map(imageEntity => extractRelativePath(imageEntity.image_url)),
+            owner: {
+                first_name: ownerEntity.first_name,
+                last_name: ownerEntity.last_name,
+                email: ownerEntity.email
+            }
+        }
     }
 
     async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {
@@ -246,6 +269,23 @@ class ProductService {
             categoryEntity,
             sizeEntity,
             colorEntity,
+        }
+    }
+
+    private async getAdditionalEntitiesForProduct(product: Product) {
+        const categoryEntity = await Category.findByPk(product.category_id);
+        const colorEntity = await Color.findByPk(product.color_id);
+        const sizeEntity = await Size.findByPk(product.size_id);
+        const ownerEntity = await User.findByPk(product.owner_id);
+        const imageEntities = await ProductImage.findAll({where: {product_id: product.id, is_main_image: false}});
+        const mainImageEntity = await ProductImage.findOne({where: {product_id: product.id, is_main_image: true}});
+        return {
+            categoryEntity,
+            colorEntity,
+            sizeEntity,
+            ownerEntity,
+            imageEntities,
+            mainImageEntity
         }
     }
 }
