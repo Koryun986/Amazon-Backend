@@ -20,6 +20,7 @@ class ProductController {
     async getProductById(req: Request, res: Response, next: NextFunction) {
         try {
             const product = await productService.getProductById(+req.params.id);
+            return res.json(product);
         } catch (e) {
             next(e);
         }

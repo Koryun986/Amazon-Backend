@@ -20,7 +20,7 @@ router.post(
     favoriteProductsController.addFavorites
 );
 router.delete(
-    "/remove",
+    "/remove/:id",
     authGuard,
     favoriteProductsController.removeFavorite
 );
