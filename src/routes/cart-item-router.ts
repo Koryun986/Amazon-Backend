@@ -10,7 +10,7 @@ router.get(
     cartItemController.getCartItems
 );
 router.post(
-    "/add",
+    "/add/:id",
     authGuard,
     cartItemController.addCartItem
 );
@@ -19,6 +19,11 @@ router.post(
     authGuard,
     cartItemController.addCartItems
 );
+router.post(
+    "/set-item",
+    authGuard,
+    cartItemController.setCartItem
+)
 router.delete(
     "/remove/:id",
     authGuard,

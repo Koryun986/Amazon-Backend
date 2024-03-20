@@ -11,9 +11,14 @@ class CartItemService {
         return cartItemEntities;
     }
 
-    async addCartItem(cartItemDto: CartItemDto, userDto: UserDto) {
+    async addCartItem(productId: number, userDto: UserDto) {
         const userEntity = await this.getUserEntityFromDto(userDto);
-        const cartItemEntity = await CartItem.create({count: cartItemDto.count, user_id: userEntity.id, product_id: cartItemDto.product_id});
+        let cartItemEntity = await CartItem.findOne({where: {user_id: userEntity.id, product_id: productId}});
+        if (!cartItemEntity) {
+            cartItemEntity = await CartItem.create({count: 0, user_id: userEntity.id, product_id: productId});
+        } else {
+            cartItemEntity.count++;
+        }
         await cartItemEntity.save();
         return cartItemEntity;
     }
@@ -36,13 +41,40 @@ class CartItemService {
         }
     }
 
+    async setCartItem(cartItemDto: CartItemDto, userDto: UserDto) {
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            const userEntity = await this.getUserEntityFromDto(userDto);
+            let cartItem = await CartItem.findOne({where: {user_id: userEntity.id, product_id: cartItemDto.product_id}});
+            if (cartItemDto) {
+                if (cartItemDto.count === cartItem.count) {
+                    return cartItem;
+                }
+                cartItem.count = cartItemDto.count;
+                await cartItem.save();
+                return cartItem;
+            }
+            cartItem = await CartItem.create({count: cartItemDto.count, product_id: cartItemDto.product_id, user_id: userEntity.id});
+            await cartItem.save();
+            await transaction.commit();
+            return cartItem;
+        } catch (e) {
+            await transaction.rollback();
+        }
+    }
+
     async removeCartItem(id: number, userDto: UserDto) {
         const userEntity = await this.getUserEntityFromDto(userDto);
         const cartItemEntity = await CartItem.findOne({where: {product_id: id, user_id: userEntity.id}});
         if (!cartItemEntity) {
             throw new Error("Cart item with this id doesn't exist");
         }
-        await cartItemEntity.destroy();
+        if (!cartItemEntity.count) {
+            await cartItemEntity.destroy();
+        } else {
+            cartItemEntity.count--;
+            await cartItemEntity.save();
+        }
         return cartItemEntity.id;
     }
 
