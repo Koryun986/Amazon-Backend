@@ -42,20 +42,23 @@ class CartItemService {
     }
 
     async setCartItem(cartItemDto: CartItemDto, userDto: UserDto) {
+        const userEntity = await this.getUserEntityFromDto(userDto);
+        let cartItem = await CartItem.findOne({where: {user_id: userEntity.id, product_id: cartItemDto.product_id}});
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
-            const userEntity = await this.getUserEntityFromDto(userDto);
-            let cartItem = await CartItem.findOne({where: {user_id: userEntity.id, product_id: cartItemDto.product_id}});
-            if (cartItemDto) {
-                if (cartItemDto.count === cartItem.count) {
-                    return cartItem;
+            if (cartItem) {
+                if (!cartItemDto.count) {
+                    await cartItem.destroy();
+                } else if (cartItemDto.count !== cartItem.count) {
+                    cartItem.count = cartItemDto.count;
+                    await cartItem.save();
                 }
-                cartItem.count = cartItemDto.count;
-                await cartItem.save();
-                return cartItem;
+            } else {
+                if (cartItemDto.count) {
+                    cartItem = await CartItem.create({count: cartItemDto.count, product_id: cartItemDto.product_id, user_id: userEntity.id});
+                    await cartItem.save();
+                }
             }
-            cartItem = await CartItem.create({count: cartItemDto.count, product_id: cartItemDto.product_id, user_id: userEntity.id});
-            await cartItem.save();
             await transaction.commit();
             return cartItem;
         } catch (e) {
