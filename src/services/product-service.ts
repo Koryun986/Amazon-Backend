@@ -23,34 +23,32 @@ type ProductReturnType = ProductDto & {
 
 class ProductService {
     async getProducts(params: object = {}): Promise<ProductReturnType[]> {
-        const products = await Product.findAll({where: {is_published: true, ...params}});
+        const products = await Product.findAll({where: {is_published: true, ...params}, include: [Color, Size, Category, ProductImage, User]});
         if (!products) {
             return [];
         }
         const productsReturnArray: ProductReturnType[] = [];
         for(const product of products) {
-            const { categoryEntity, colorEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(product);
-            if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity || !mainImageEntity) {
-                throw new Error("Something went wrong");
-            }
+            const images = product.images.filter(image => !image.is_main_image).map(image => extractRelativePath(image.image_url));
+            const mainImage = extractRelativePath(product.images.find(image => image.is_main_image)?.image_url || "");
             productsReturnArray.push({
                 id: product.id,
                 name: product.name,
                 description: product.description,
                 brand: product.brand,
                 price: product.price,
-                category: categoryEntity.name,
-                color: colorEntity.name,
-                size: sizeEntity.name,
+                category: product.category.name,
+                color: product.color.name,
+                size: product.size.name,
                 time_bought: product.time_bought,
                 is_published: product.is_published,
                 total_earnings: product.total_earnings,
-                main_image: extractRelativePath(mainImageEntity.image_url),
-                images: imageEntities.map(imageEntity => extractRelativePath(imageEntity.image_url)),
+                main_image: mainImage,
+                images,
                 owner: {
-                    first_name: ownerEntity.first_name,
-                    last_name: ownerEntity.last_name,
-                    email: ownerEntity.email
+                    first_name: product.user.first_name,
+                    last_name: product.user.last_name,
+                    email: product.user.email
                 }
             });
         }
@@ -90,29 +88,30 @@ class ProductService {
     }
 
     async getProductById(id: number): Promise<ProductReturnType> {
-        const productEntity = await Product.findOne({where: {id, is_published: true}});
+        const productEntity = await Product.findOne({where: {id, is_published: true}, include: [Color, Size, Category, ProductImage, User]});
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const { colorEntity, categoryEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(productEntity);
+        const images = productEntity.images.filter(image => !image.is_main_image).map(image => extractRelativePath(image.image_url));
+        const mainImage = extractRelativePath(productEntity.images.find(image => image.is_main_image)?.image_url || "");
         return {
             id: productEntity.id,
             name: productEntity.name,
             description: productEntity.description,
             brand: productEntity.brand,
             price: productEntity.price,
-            category: categoryEntity.name,
-            color: colorEntity.name,
-            size: sizeEntity.name,
+            category: productEntity.category.name,
+            color: productEntity.color.name,
+            size: productEntity.size.name,
             time_bought: productEntity.time_bought,
             is_published: productEntity.is_published,
             total_earnings: productEntity.total_earnings,
-            main_image: extractRelativePath(mainImageEntity.image_url),
-            images: imageEntities.map(imageEntity => extractRelativePath(imageEntity.image_url)),
+            main_image: mainImage,
+            images,
             owner: {
-                first_name: ownerEntity.first_name,
-                last_name: ownerEntity.last_name,
-                email: ownerEntity.email
+                first_name: productEntity.user.first_name,
+                last_name: productEntity.user.last_name,
+                email: productEntity.user.email
             }
         }
     }
@@ -122,31 +121,29 @@ class ProductService {
         if (!userEntity) {
             throw new Error("UnAuthorized Error");
         }
-        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}});
+        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [Color, Size, Category, ProductImage, User]});
         const productsReturnArray: ProductReturnType[] = [];
         for(const product of productEntities) {
-            const { categoryEntity, colorEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(product);
-            if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity || !mainImageEntity) {
-                throw new Error("Something went wrong");
-            }
+            const images = product.images.filter(image => !image.is_main_image).map(image => extractRelativePath(image.image_url));
+            const mainImage = extractRelativePath(product.images.find(image => image.is_main_image)?.image_url || "");
             productsReturnArray.push({
                 id: product.id,
                 name: product.name,
                 description: product.description,
                 brand: product.brand,
                 price: product.price,
-                category: categoryEntity.name,
-                color: colorEntity.name,
-                size: sizeEntity.name,
+                category: product.category.name,
+                color: product.color.name,
+                size: product.size.name,
                 time_bought: product.time_bought,
                 is_published: product.is_published,
                 total_earnings: product.total_earnings,
-                main_image: extractRelativePath(mainImageEntity.image_url),
-                images: imageEntities.map(imageEntity => extractRelativePath(imageEntity.image_url)),
+                main_image: mainImage,
+                images,
                 owner: {
-                    first_name: ownerEntity.first_name,
-                    last_name: ownerEntity.last_name,
-                    email: ownerEntity.email
+                    first_name: product.user.first_name,
+                    last_name: product.user.last_name,
+                    email: product.user.email
                 }
             });
         }
@@ -161,6 +158,7 @@ class ProductService {
         const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
+            //@ts-ignore
             const productEntity = await Product.create({
                 ...productDto,
                 color_id: colorEntity.id,
