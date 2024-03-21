@@ -1,5 +1,13 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from "@sequelize/core";
-import { Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
+import {
+    CreationOptional,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    Model,
+    NonAttribute
+} from "@sequelize/core";
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo } from "@sequelize/core/decorators-legacy";
+import {User} from "./user";
 
 export class Token extends Model<InferAttributes<Token>, InferCreationAttributes<Token>> {
     @Attribute(DataTypes.INTEGER)
@@ -13,4 +21,7 @@ export class Token extends Model<InferAttributes<Token>, InferCreationAttributes
 
     @Attribute(DataTypes.INTEGER)
     declare user_id: number;
+
+    @BelongsTo(() => User, "user_id")
+    declare user?: NonAttribute<User>
 }
