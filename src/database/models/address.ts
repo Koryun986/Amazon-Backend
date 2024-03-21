@@ -1,5 +1,13 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
+import {
+    Model,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+    NonAttribute
+} from "@sequelize/core";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
+import {User} from "./user";
 
 @Table({tableName: "Addresses"})
 export class Address extends Model<InferAttributes<Address>, InferCreationAttributes<Address>> {
@@ -36,4 +44,7 @@ export class Address extends Model<InferAttributes<Address>, InferCreationAttrib
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare user_id: number;
+
+    @BelongsTo(() => User, "user_id")
+    declare user?: NonAttribute<User>
 }
