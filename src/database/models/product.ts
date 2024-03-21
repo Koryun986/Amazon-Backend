@@ -10,6 +10,7 @@ import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsT
 import {User} from "./user";
 import {Color} from "./color";
 import {Size} from "./size";
+import {Category} from "./category";
 
 @Table({tableName: "Products", createdAt: false, updatedAt: false})
 export class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
@@ -33,6 +34,9 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @Attribute(DataTypes.FLOAT)
     @NotNull
     declare price: number;
+
+    /** Defined by {@link Category.products} */
+    declare category?: NonAttribute<Category>;
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
