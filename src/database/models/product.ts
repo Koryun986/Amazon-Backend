@@ -8,6 +8,7 @@ import {
 } from "@sequelize/core";
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
+import {Color} from "./color";
 
 @Table({tableName: "Products", createdAt: false, updatedAt: false})
 export class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
@@ -35,6 +36,9 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare category_id: number;
+
+    /** Defined by {@link Color.products} */
+    declare color?: NonAttribute<Color>;
 
     @Attribute(DataTypes.INTEGER)
     @NotNull

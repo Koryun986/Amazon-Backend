@@ -1,5 +1,7 @@
 import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, HasMany } from "@sequelize/core/decorators-legacy";
+import {Product} from "./product";
+import {NonAttribute} from "sequelize";
 
 @Table({tableName: "Colors"})
 export class Color extends Model<InferAttributes<Color>, InferCreationAttributes<Color>> {
@@ -11,4 +13,12 @@ export class Color extends Model<InferAttributes<Color>, InferCreationAttributes
     @Attribute(DataTypes.STRING)
     @NotNull
     declare name: string;
+
+    @HasMany(() => Product, {
+        foreignKey: "color_id",
+        inverse: {
+            as: "color",
+        },
+    })
+    declare products?: NonAttribute<Product[]>;
 }
