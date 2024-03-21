@@ -11,6 +11,7 @@ import {User} from "./user";
 import {Color} from "./color";
 import {Size} from "./size";
 import {Category} from "./category";
+import {ProductImage} from "./product-images";
 
 @Table({tableName: "Products", createdAt: false, updatedAt: false})
 export class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
@@ -74,6 +75,9 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare owner_id: number;
+
+    /** Declared by {@link ProductImage#product} */
+    declare images?: ProductImage[];
 
     @BelongsTo(() => User, "owner_id")
     declare user?: NonAttribute<User>

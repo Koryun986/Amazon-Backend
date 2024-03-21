@@ -1,5 +1,13 @@
-import { Model, DataTypes, InferAttributes, InferCreationAttributes, CreationOptional } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default } from "@sequelize/core/decorators-legacy";
+import {
+    Model,
+    DataTypes,
+    InferAttributes,
+    InferCreationAttributes,
+    CreationOptional,
+    NonAttribute
+} from "@sequelize/core";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
+import {Product} from "./product";
 
 @Table({tableName: "Product_Images"})
 export class ProductImage extends Model<InferAttributes<ProductImage>, InferCreationAttributes<ProductImage>> {
@@ -20,4 +28,13 @@ export class ProductImage extends Model<InferAttributes<ProductImage>, InferCrea
     @NotNull
     @Default(false)
     declare is_main_image: boolean;
+
+    @BelongsTo(() => Product, {
+        foreignKey: "product_id",
+        inverse: {
+            as: "images",
+            type: "hasMany"
+        }
+    })
+    declare product: NonAttribute<Product>
 }
