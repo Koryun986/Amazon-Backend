@@ -14,8 +14,14 @@ const upload = multer({
         callback(null, true);
     }
 });
-router.get("", productController.getProducts);
-router.get("/:id", productController.getProductById)
+router.get("/get", productController.getProducts);
+router.get("/get/:id", productController.getProductById);
+
+router.get(
+    "/account-products",
+    authGuard,
+    productController.getOwnersProducts
+);
 router.post(
     "",
     authGuard,

@@ -29,9 +29,6 @@ class ProductService {
         }
         const productsReturnArray: ProductReturnType[] = [];
         for(const product of products) {
-            if (!product.is_published) {
-                continue;
-            }
             const { categoryEntity, colorEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(product);
             if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity || !mainImageEntity) {
                 throw new Error("Something went wrong");
@@ -118,6 +115,42 @@ class ProductService {
                 email: ownerEntity.email
             }
         }
+    }
+
+    async getOwnersProducts(userDto: UserDto): Promise<ProductReturnType[]> {
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw new Error("UnAuthorized Error");
+        }
+        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}});
+        const productsReturnArray: ProductReturnType[] = [];
+        for(const product of productEntities) {
+            const { categoryEntity, colorEntity, sizeEntity, ownerEntity, mainImageEntity, imageEntities } = await this.getAdditionalEntitiesForProduct(product);
+            if (!categoryEntity || !colorEntity || !sizeEntity || !ownerEntity || !mainImageEntity) {
+                throw new Error("Something went wrong");
+            }
+            productsReturnArray.push({
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                brand: product.brand,
+                price: product.price,
+                category: categoryEntity.name,
+                color: colorEntity.name,
+                size: sizeEntity.name,
+                time_bought: product.time_bought,
+                is_published: product.is_published,
+                total_earnings: product.total_earnings,
+                main_image: extractRelativePath(mainImageEntity.image_url),
+                images: imageEntities.map(imageEntity => extractRelativePath(imageEntity.image_url)),
+                owner: {
+                    first_name: ownerEntity.first_name,
+                    last_name: ownerEntity.last_name,
+                    email: ownerEntity.email
+                }
+            });
+        }
+        return productsReturnArray;
     }
 
     async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {

@@ -7,6 +7,7 @@ import type { UserDto } from "../dtos/user-dto";
 
 export async function authGuard(req: Request, res: Response, next: NextFunction) {
     try {
+        console.log("auth", req.url)
         if (!req.headers.authorization) {
             throw new Error("UnAuthorized Error");
         }

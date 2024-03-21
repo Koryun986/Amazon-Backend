@@ -73,10 +73,8 @@ class AuthController {
 
     async getUser(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log("req")
             //@ts-ignore
             const data = await authService.getUser(req.user);
-            console.log("data", data)
             return res.json(data);
         } catch (error) {
             next(error);

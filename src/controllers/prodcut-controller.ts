@@ -26,6 +26,17 @@ class ProductController {
         }
     }
 
+    async getOwnersProducts(req: Request, res: Response, next: NextFunction) {
+        try {
+            console.log("router")
+            //@ts-ignore
+            const products = await productService.getOwnersProducts(req.user);
+            return res.json(products);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     async createProduct(req: Request, res: Response, next: NextFunction) {
         try {
             const mainImage = req.files["main-image"][0];

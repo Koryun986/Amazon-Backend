@@ -4,24 +4,22 @@ import {authGuard} from "../middlewares/auth-middleware";
 
 const router = Router();
 
+router.use(authGuard)
+
 router.post(
     "/create",
-    authGuard,
     addressController.createAddress
 );
 router.put(
     "/update",
-    authGuard,
     addressController.updateAddress
 )
 router.get(
     "/get-addresses",
-    authGuard,
     addressController.getAddresses
 );
 router.delete(
     "/delete/:id",
-    authGuard,
     addressController.deleteAddress
 )
 
