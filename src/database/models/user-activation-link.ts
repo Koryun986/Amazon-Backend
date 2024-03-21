@@ -1,5 +1,13 @@
-import { Model, InferAttributes, InferCreationAttributes, DataTypes, CreationOptional } from '@sequelize/core';
-import { Attribute, AutoIncrement, NotNull, PrimaryKey, Table } from "@sequelize/core/decorators-legacy";
+import {
+    Model,
+    InferAttributes,
+    InferCreationAttributes,
+    DataTypes,
+    CreationOptional,
+    NonAttribute
+} from '@sequelize/core';
+import { Attribute, AutoIncrement, NotNull, PrimaryKey, Table, BelongsTo } from "@sequelize/core/decorators-legacy";
+import {User} from "./user";
 
 @Table({tableName: "user-activation-links"})
 export class UserActivationLink extends Model<InferAttributes<UserActivationLink>, InferCreationAttributes<UserActivationLink>> {
@@ -15,4 +23,7 @@ export class UserActivationLink extends Model<InferAttributes<UserActivationLink
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare user_id: number;
+
+    @BelongsTo(() => User, "user_id")
+    declare user?: NonAttribute<User>
 }
