@@ -11,11 +11,6 @@ const passwordValidationOptions: MinMaxOptions = {
     max: 32,
 };
 
-router.get(
-    "/get-user",
-    authGuard,
-    authController.getUser
-);
 router.post(
     "/registration",
     body("email").isEmail(),
@@ -23,17 +18,24 @@ router.post(
     authController.registration,
 );
 router.post("/login", authController.login);
-router.post(
-    "/change-password",
-    authGuard,
-    authController.changePassword
-);
 router.get("/refresh", authController.refresh);
 router.get("/activate/:link", authController.activate);
+
+router.use(authGuard);
+
+router.get(
+    "/get-user",
+    authController.getUser
+);
+router.post(
+    "/change-password",
+    authController.changePassword
+);
+
+router.use(adminGuard);
+
 router.post(
     "/make-admin",
-    authGuard,
-    adminGuard,
     authController.makeAdmin
 );
 

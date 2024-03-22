@@ -5,22 +5,20 @@ import {adminGuard, authGuard} from "../middlewares/auth-middleware";
 const router = Router();
 
 router.get("", sizeController.getSizes);
+
+router.use(authGuard);
+router.use(adminGuard);
+
 router.post(
 "/create",
-    authGuard,
-    adminGuard,
     sizeController.createSize
 );
 router.put(
     "/update",
-    authGuard,
-    adminGuard,
     sizeController.updateSize
 );
 router.delete(
     "/delete/:id",
-    authGuard,
-    adminGuard,
     sizeController.deleteSize
 );
 export default router;

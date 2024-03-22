@@ -17,14 +17,14 @@ const upload = multer({
 router.get("/get", productController.getProducts);
 router.get("/get/:id", productController.getProductById);
 
+router.use(authGuard);
+
 router.get(
     "/account-products",
-    authGuard,
     productController.getOwnersProducts
 );
 router.post(
     "",
-    authGuard,
     upload.fields([
         { name: "main-image", maxCount: 1 },
         { name: "images", maxCount: 4 },
@@ -33,7 +33,6 @@ router.post(
 );
 router.put(
     "",
-    authGuard,
     upload.fields([
         { name: "main-image", maxCount: 1 },
         { name: "images", maxCount: 4 },
@@ -42,12 +41,10 @@ router.put(
 );
 router.delete(
     "",
-    authGuard,
     productController.deleteProduct
 );
 router.post(
     "/buy",
-    authGuard,
     productController.buyProduct
 );
 

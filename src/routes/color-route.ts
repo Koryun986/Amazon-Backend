@@ -5,22 +5,20 @@ import {adminGuard, authGuard} from "../middlewares/auth-middleware";
 const router = Router();
 
 router.get("/", colorController.getColors);
+
+router.use(authGuard);
+router.use(adminGuard);
+
 router.post(
     "/create",
-    authGuard,
-    adminGuard,
     colorController.createColor,
 );
 router.put(
     "/update",
-    authGuard,
-    adminGuard,
     colorController.updateColor,
 );
 router.delete(
     "/delete/:id",
-    authGuard,
-    adminGuard,
     colorController.deleteColor,
 );
 export default router;

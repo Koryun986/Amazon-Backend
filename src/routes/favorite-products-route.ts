@@ -4,24 +4,22 @@ import favoriteProductsController from "./../controllers/favorite-products-contr
 
 const router = Router();
 
+router.use(authGuard);
+
 router.get(
     "/",
-    authGuard,
     favoriteProductsController.getFavorites
 );
 router.post(
     "/add",
-    authGuard,
     favoriteProductsController.addFavorite
 );
 router.post(
     "/add-many",
-    authGuard,
     favoriteProductsController.addFavorites
 );
 router.delete(
     "/remove/:id",
-    authGuard,
     favoriteProductsController.removeFavorite
 );
 

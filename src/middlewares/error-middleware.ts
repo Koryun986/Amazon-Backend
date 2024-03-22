@@ -1,4 +1,4 @@
-const ApiError = require('../exceptions/api-error');
+import {ApiError} from "../exceptions/api-error";
 
 export default function  errorMiddleware(err, req, res, next) {
   console.log(err);
@@ -6,5 +6,4 @@ export default function  errorMiddleware(err, req, res, next) {
     return res.status(err.status).json({message: err.message, errors: err.errors})
   }
   return res.status(500).json({message: err.message})
-
 };
