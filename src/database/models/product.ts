@@ -80,5 +80,5 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     declare images?: ProductImage[];
 
     @BelongsTo(() => User, "owner_id")
-    declare user?: NonAttribute<User>
+    declare owner?: NonAttribute<User>
 }

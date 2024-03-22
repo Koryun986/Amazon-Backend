@@ -23,40 +23,33 @@ type ProductReturnType = ProductDto & {
 }
 
 class ProductService {
-    async getProducts(params: object = {}): Promise<ProductReturnType[]> {
-        const products = await Product.findAll({where: {is_published: true, ...params}, include: [Color, Size, Category, ProductImage, User]});
-        if (!products) {
-            return [];
-        }
-        const productsReturnArray: ProductReturnType[] = [];
-        for(const product of products) {
-            const images = product.images.filter(image => !image.is_main_image).map(image => extractRelativePath(image.image_url));
-            const mainImage = extractRelativePath(product.images.find(image => image.is_main_image)?.image_url || "");
-            productsReturnArray.push({
-                id: product.id,
-                name: product.name,
-                description: product.description,
-                brand: product.brand,
-                price: product.price,
-                category: product.category.name,
-                color: product.color.name,
-                size: product.size.name,
-                time_bought: product.time_bought,
-                is_published: product.is_published,
-                total_earnings: product.total_earnings,
-                main_image: mainImage,
-                images,
-                owner: {
-                    first_name: product.user.first_name,
-                    last_name: product.user.last_name,
-                    email: product.user.email
-                }
-            });
-        }
-        return productsReturnArray;
+    async getProducts(params: object = {}) {
+        const products = await Product.findAll({where: {is_published: true, ...params}, include: [
+            {
+                model: Color,
+                attributes: ["name"],
+            },
+            {
+                model: Size,
+                attributes: ["name"],
+            },
+            {
+                model: Category,
+                attributes: ["name"]
+            },
+            {
+                model: ProductImage,
+                attributes: ["image_url", "is_main_image"],
+            },
+            {
+                model: User,
+                attributes: ["first_name", "last_name", "email"],
+            }
+        ]});
+        return products;
     }
 
-    async getProductsByParams(params: ProductParams): Promise<ProductReturnType[]> {
+    async getProductsByParams(params: ProductParams) {
         const query: any = {};
         if (params.text) {
             query[Op.or] = {
@@ -88,67 +81,72 @@ class ProductService {
         return await this.getProducts(query);
     }
 
-    async getProductById(id: number): Promise<ProductReturnType> {
-        const productEntity = await Product.findOne({where: {id, is_published: true}, include: [Color, Size, Category, ProductImage, User]});
+    async getProductById(id: number) {
+        const productEntity = await Product.findOne({where: {is_published: true, id}, include: [
+            {
+                model: Color,
+                attributes: ["name"],
+            },
+            {
+                model: Size,
+                attributes: ["name"],
+            },
+            {
+                model: Category,
+                attributes: ["name"]
+            },
+            {
+                model: ProductImage,
+                attributes: ["image_url", "is_main_image"],
+            },
+            {
+                model: User,
+                attributes: ["first_name", "last_name", "email"],
+            }
+        ]});;
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const images = productEntity.images.filter(image => !image.is_main_image).map(image => extractRelativePath(image.image_url));
-        const mainImage = extractRelativePath(productEntity.images.find(image => image.is_main_image)?.image_url || "");
-        return {
-            id: productEntity.id,
-            name: productEntity.name,
-            description: productEntity.description,
-            brand: productEntity.brand,
-            price: productEntity.price,
-            category: productEntity.category.name,
-            color: productEntity.color.name,
-            size: productEntity.size.name,
-            time_bought: productEntity.time_bought,
-            is_published: productEntity.is_published,
-            total_earnings: productEntity.total_earnings,
-            main_image: mainImage,
-            images,
-            owner: {
-                first_name: productEntity.user.first_name,
-                last_name: productEntity.user.last_name,
-                email: productEntity.user.email
-            }
-        }
+        return productEntity;
     }
 
-    async getOwnersProducts(userDto: UserDto): Promise<ProductReturnType[]> {
+    async getOwnersProducts(userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [Color, Size, Category, ProductImage, User]});
-        const productsReturnArray: ProductReturnType[] = [];
-        for(const product of productEntities) {
-            const images = product.images.filter(image => !image.is_main_image).map(image => extractRelativePath(image.image_url));
-            const mainImage = extractRelativePath(product.images.find(image => image.is_main_image)?.image_url || "");
-            productsReturnArray.push({
-                id: product.id,
-                name: product.name,
-                description: product.description,
-                brand: product.brand,
-                price: product.price,
-                category: product.category.name,
-                color: product.color.name,
-                size: product.size.name,
-                time_bought: product.time_bought,
-                is_published: product.is_published,
-                total_earnings: product.total_earnings,
-                main_image: mainImage,
-                images,
-                owner: {
-                    first_name: product.user.first_name,
-                    last_name: product.user.last_name,
-                    email: product.user.email
-                }
-            });
-        }
-        return productsReturnArray;
+        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [
+            {
+                model: Color,
+                attributes: ["name"],
+            },
+            {
+                model: Size,
+                attributes: ["name"],
+            },
+            {
+                model: Category,
+                attributes: ["name"]
+            },
+            {
+                model: ProductImage,
+                where: { is_main_image: false },
+                attributes: ["image_url"],
+                as: "images",
+            },
+            {
+                model: ProductImage,
+                where: {is_main_image: true},
+                attributes: ["main_image"],
+                as: "main_image",
+            },
+            {
+                model: User,
+                attributes: ["first_name", "last_name", "email"],
+                as: "owner"
+            }
+        ]});
+        return productEntities;
     }
 
     async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {
@@ -169,10 +167,10 @@ class ProductService {
             });
             await productEntity.save();
 
-            const mainImageEntity = await ProductImage.create({image_url: mainImage.path, product_id: productEntity.id, is_main_image: true});
+            const mainImageEntity = await ProductImage.create({image_url: extractRelativePath(mainImage.path), product_id: productEntity.id, is_main_image: true});
             await mainImageEntity.save();
             for(const image of images) {
-                const imageEntity = await ProductImage.create({image_url: image.path, product_id: productEntity.id, is_main_image: false});
+                const imageEntity = await ProductImage.create({image_url: extractRelativePath(image.path), product_id: productEntity.id, is_main_image: false});
                 await imageEntity.save();
             }
             await transaction.commit();
