@@ -11,6 +11,7 @@ import sizeRouter from "./routes/size-route";
 import colorRouter from "./routes/color-route";
 import favoriteProductsRouter from "./routes/favorite-products-route";
 import cartItemsRouter from "./routes/cart-item-router";
+import errorMiddleware from "./middlewares/error-middleware";
 
 const app: Express = express();
 
@@ -30,6 +31,7 @@ app.use("/sizes/", sizeRouter);
 app.use("/colors/", colorRouter);
 app.use("/favorite-products/",favoriteProductsRouter);
 app.use("/cart-items/", cartItemsRouter);
+app.use(errorMiddleware);
 
 const startServer = async () => {
     try {
