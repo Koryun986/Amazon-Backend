@@ -10,6 +10,7 @@ import { Token } from "../database/models/token";
 import { Admin } from "../database/models/admin";
 import type { ChangePasswordType, LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
+import {ApiError} from "../exceptions/api-error";
 
 class AuthService {
     async createUser(user: UserType) {
@@ -73,7 +74,7 @@ class AuthService {
     async changePassword(changePasswordData: ChangePasswordType, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         
         const isPasswordsEqual = await bcrypt.compare(changePasswordData.password, userEntity.password);
@@ -158,7 +159,7 @@ class AuthService {
     async getUser(userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         const {userDto: user, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
         return {

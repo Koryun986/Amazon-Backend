@@ -3,6 +3,7 @@ import {User} from "../database/models/user";
 import {CartItem} from "../database/models/cart-item";
 import type {CartItemDto} from "../dtos/cart-item-dto";
 import type {UserDto} from "../dtos/user-dto";
+import {ApiError} from "../exceptions/api-error";
 
 class CartItemService {
     async getCartItems(userDto: UserDto) {
@@ -84,7 +85,7 @@ class CartItemService {
     private async getUserEntityFromDto(userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         return userEntity;
     }

@@ -10,6 +10,7 @@ import type {UserDto} from "../dtos/user-dto";
 import {extractRelativePath} from "../utils/file-helpers";
 import {ProductParams} from "../types/product-params-type";
 import {Op} from "@sequelize/core";
+import {ApiError} from "../exceptions/api-error";
 
 type ProductReturnType = ProductDto & {
     id: number;
@@ -119,7 +120,7 @@ class ProductService {
     async getOwnersProducts(userDto: UserDto): Promise<ProductReturnType[]> {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [Color, Size, Category, ProductImage, User]});
         const productsReturnArray: ProductReturnType[] = [];
@@ -153,7 +154,7 @@ class ProductService {
     async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {
         const userEntity = await User.findOne({where: {email: user.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
         const transaction = await sequelize.startUnmanagedTransaction();
@@ -198,7 +199,7 @@ class ProductService {
     async updateProduct({ productDto: product, images, mainImage }: { productDto: ProductDto & {id: number}, mainImage: Express.Multer.File, images: Express.Multer.File[] }, userDto: UserDto): Promise<ProductReturnType> {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         const productEntity = await Product.findByPk(product.id);
         if (!productEntity) {
@@ -261,7 +262,7 @@ class ProductService {
     async deleteProduct(id: number, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         const productEntity = await Product.findByPk(id);
         if (!productEntity) {

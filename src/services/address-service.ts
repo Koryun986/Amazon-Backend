@@ -4,6 +4,7 @@ import { Address } from "../database/models/address";
 import type { AddressType } from "../types/address-types";
 import type { UserDto } from "../dtos/user-dto";
 import {userInfo} from "os";
+import {ApiError} from "../exceptions/api-error";
 
 type AddressReturnType = AddressType & { id: number };
 
@@ -11,7 +12,7 @@ class AddressService {
     async createAddress(address: AddressType, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         await this.changeDefaultAddressesToNormal(userEntity.id);
         const addressEntity = await Address.create({
@@ -30,7 +31,7 @@ class AddressService {
     async getAddresses(userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         const addressEntities: Address[] = await Address.findAll({where: {user_id: userEntity.id}});
         if (!addressEntities) {

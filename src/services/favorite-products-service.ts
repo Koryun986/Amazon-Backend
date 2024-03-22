@@ -2,6 +2,7 @@ import sequelize from "../database";
 import {FavoriteProduct} from "../database/models/favorite-prodcut";
 import {User} from "../database/models/user";
 import type {UserDto} from "../dtos/user-dto";
+import {ApiError} from "../exceptions/api-error";
 
 class FavoriteProductsService {
     async getFavorites(userDto: UserDto) {
@@ -45,7 +46,7 @@ class FavoriteProductsService {
     private async getUserEntityFromDto(userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
-            throw new Error("UnAuthorized Error");
+            throw ApiError.UnauthorizedError();
         }
         return userEntity;
     }
