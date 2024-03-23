@@ -25,7 +25,7 @@ type ProductReturnType = ProductDto & {
 class ProductService {
     async getProducts(params: object = {}, pagination?: {limit?: string, page?: string}) {
         const limit = +pagination?.limit || 8;
-        const offset = pagination?.page ? +pagination.page * limit : 0;
+        const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
         const products = await Product.findAll({where: {is_published: true, ...params}, limit, offset, include: [
             {
                 model: Color,
