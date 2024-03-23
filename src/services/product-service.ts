@@ -23,8 +23,10 @@ type ProductReturnType = ProductDto & {
 }
 
 class ProductService {
-    async getProducts(params: object = {}) {
-        const products = await Product.findAll({where: {is_published: true, ...params}, include: [
+    async getProducts(params: object = {}, pagination?: {limit?: string, page?: string}) {
+        const limit = +pagination?.limit || 8;
+        const offset = pagination?.page ? +pagination.page * limit : 0;
+        const products = await Product.findAll({where: {is_published: true, ...params}, limit, offset, include: [
             {
                 model: Color,
                 attributes: ["name"],
@@ -78,7 +80,7 @@ class ProductService {
         if (params.category) {
             query.category_id = +params.category;
         }
-        return await this.getProducts(query);
+        return await this.getProducts(query, params);
     }
 
     async getProductById(id: number) {
