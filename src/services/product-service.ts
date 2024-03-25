@@ -105,7 +105,7 @@ class ProductService {
                 model: User,
                 attributes: ["first_name", "last_name", "email"],
             }
-        ]});;
+        ]});
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
@@ -118,35 +118,26 @@ class ProductService {
             throw ApiError.UnauthorizedError();
         }
         const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [
-            {
-                model: Color,
-                attributes: ["name"],
-            },
-            {
-                model: Size,
-                attributes: ["name"],
-            },
-            {
-                model: Category,
-                attributes: ["name"]
-            },
-            {
-                model: ProductImage,
-                where: { is_main_image: false },
-                attributes: ["image_url"],
-                as: "images",
-            },
-            {
-                model: ProductImage,
-                where: {is_main_image: true},
-                attributes: ["main_image"],
-                as: "main_image",
-            },
-            {
-                model: User,
-                attributes: ["first_name", "last_name", "email"],
-                as: "owner"
-            }
+                {
+                    model: Color,
+                    attributes: ["name"],
+                },
+                {
+                    model: Size,
+                    attributes: ["name"],
+                },
+                {
+                    model: Category,
+                    attributes: ["name"]
+                },
+                {
+                    model: ProductImage,
+                    attributes: ["image_url", "is_main_image"],
+                },
+                {
+                    model: User,
+                    attributes: ["first_name", "last_name", "email"],
+                }
         ]});
         return productEntities;
     }
@@ -156,6 +147,9 @@ class ProductService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
+        console.log(productDto, "product dto");
+        console.log(images, "images");
+        console.log(mainImage, "main image");
         const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
@@ -196,7 +190,7 @@ class ProductService {
         }
     }
 
-    async updateProduct({ productDto: product, images, mainImage }: { productDto: ProductDto & {id: number}, mainImage: Express.Multer.File, images: Express.Multer.File[] }, userDto: UserDto): Promise<ProductReturnType> {
+    async updateProduct(product: {id: number, name: string, description: string, price: number}, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
@@ -208,51 +202,14 @@ class ProductService {
         if (productEntity.owner_id !== userEntity.id) {
             throw new Error("Forbidden Error, try to change your products");
         }
-        const { categoryEntity, sizeEntity, colorEntity } = await this.getEntitiesByNames({color: product.color, size: product.size, category: product.category});
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
-            await productEntity.update({
-                name: product.name,
-                description: product.description,
-                brand: product.brand,
-                price: product.price,
-                category_id: categoryEntity.id,
-                size_id: sizeEntity.id,
-                color_id: colorEntity.id,
-                is_published: !!product?.is_published,
-            });
+            productEntity.name = product.name;
+            productEntity.description = product.description;
+            productEntity.price = product.price;
             await productEntity.save();
-            let mainImageEntity = await ProductImage.findOne({where: {product_id: productEntity.id, is_main_image: true}});
-            if (!mainImageEntity) {
-                mainImageEntity = await ProductImage.create({product_id: productEntity.id, is_main_image: true, image_url: mainImage.path});
-            }
-            await mainImageEntity.save();
-            const imageEntities = await ProductImage.findAll({where: {product_id: productEntity.id, is_main_image: false}});
-            const imagePaths = [];
-            for(let i = 0; i < images.length; i++) {
-                if (!imageEntities[i]) {
-                    const imageEntity = await ProductImage.create({product_id: productEntity.id, image_url: images[i].path, is_main_image: false});
-                    await imageEntity.save();
-                    continue;
-                }
-                imageEntities[i].image_url = images[i].path;
-                await imageEntities[i].save();
-                imagePaths.push(images[i]);
-            }
             await transaction.commit();
-            return {
-                ...product,
-                is_published: productEntity.is_published,
-                total_earnings: productEntity.total_earnings,
-                time_bought: productEntity.time_bought,
-                images: imagePaths,
-                main_image: mainImageEntity.image_url,
-                owner: {
-                    first_name: userEntity.first_name,
-                    last_name: userEntity.last_name,
-                    email: userEntity.email
-            }
-        }
+            return productEntity;
         } catch (e) {
             await transaction.rollback();
             throw new Error(e);
@@ -263,6 +220,10 @@ class ProductService {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
+        }
+        const productImageEntities = await ProductImage.findAll({where: {product_id: id}});
+        for (const image of productImageEntities) {
+            await image.destroy();
         }
         const productEntity = await Product.findByPk(id);
         if (!productEntity) {
@@ -285,7 +246,7 @@ class ProductService {
     }
 
     private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
-        const categoryEntity = await Category.findOne({where: {name: category}});
+        const categoryEntity = await Category.findByPk(+category);
         if (!categoryEntity) {
             throw new Error("Category doesn't exist");
         }
@@ -301,23 +262,6 @@ class ProductService {
             categoryEntity,
             sizeEntity,
             colorEntity,
-        }
-    }
-
-    private async getAdditionalEntitiesForProduct(product: Product) {
-        const categoryEntity = await Category.findByPk(product.category_id);
-        const colorEntity = await Color.findByPk(product.color_id);
-        const sizeEntity = await Size.findByPk(product.size_id);
-        const ownerEntity = await User.findByPk(product.owner_id);
-        const imageEntities = await ProductImage.findAll({where: {product_id: product.id, is_main_image: false}});
-        const mainImageEntity = await ProductImage.findOne({where: {product_id: product.id, is_main_image: true}});
-        return {
-            categoryEntity,
-            colorEntity,
-            sizeEntity,
-            ownerEntity,
-            imageEntities,
-            mainImageEntity
         }
     }
 }

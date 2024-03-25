@@ -63,18 +63,8 @@ class ProductController {
 
     async updateProduct(req: Request, res: Response, next: NextFunction) {
         try {
-            const mainImage = req.files["main-image"][0];
-            if (!mainImage) {
-                throw new Error("Please provide main image");
-            }
-            const images = req.files["images"];
-            const requestData = {
-                productDto: req.body,
-                mainImage,
-                images,
-            };
             //@ts-ignore
-            const product = await productService.updateProduct(requestData, req.user);
+            const product = await productService.updateProduct(req.body, req.user);
             return res.json(product);
         } catch (e) {
             next(e);
@@ -84,7 +74,7 @@ class ProductController {
     async deleteProduct(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
-            await productService.deleteProduct(req.body.id, req.user);
+            await productService.deleteProduct(+req.params.id, req.user);
             return res.json();
         } catch (e) {
             next(e);

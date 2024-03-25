@@ -30,11 +30,16 @@ export class ProductImage extends Model<InferAttributes<ProductImage>, InferCrea
     declare is_main_image: boolean;
 
     @BelongsTo(() => Product, {
-        foreignKey: "product_id",
+        foreignKey: {
+            name: "product_id",
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE',
+        },
         inverse: {
             as: "images",
             type: "hasMany"
-        }
+        },
+
     })
     declare product: NonAttribute<Product>
 }

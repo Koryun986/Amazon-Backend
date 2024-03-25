@@ -24,7 +24,7 @@ router.get(
     productController.getOwnersProducts
 );
 router.post(
-    "",
+    "/create",
     upload.fields([
         { name: "main-image", maxCount: 1 },
         { name: "images", maxCount: 4 },
@@ -32,15 +32,11 @@ router.post(
     productController.createProduct
 );
 router.put(
-    "",
-    upload.fields([
-        { name: "main-image", maxCount: 1 },
-        { name: "images", maxCount: 4 },
-    ]),
+    "/edit",
     productController.updateProduct
 );
 router.delete(
-    "",
+    "/delete/:id",
     productController.deleteProduct
 );
 router.post(
