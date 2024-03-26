@@ -142,14 +142,41 @@ class ProductService {
         return productEntities;
     }
 
-    async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto): Promise<ProductReturnType> {
+    async getProductsByIds(ids: number[]) {
+        const products = await Product.findAll({where: {
+            id: {
+                [Op.in]: ids
+            }
+        }, include: [
+            {
+                model: Color,
+                attributes: ["name"],
+            },
+            {
+                model: Size,
+                attributes: ["name"],
+            },
+            {
+                model: Category,
+                attributes: ["name"]
+            },
+            {
+                model: ProductImage,
+                attributes: ["image_url", "is_main_image"],
+            },
+            {
+                model: User,
+                attributes: ["first_name", "last_name", "email"],
+            }
+        ]});
+        return products;
+    }
+
+    async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto) {
         const userEntity = await User.findOne({where: {email: user.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        console.log(productDto, "product dto");
-        console.log(images, "images");
-        console.log(mainImage, "main image");
         const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
@@ -165,9 +192,11 @@ class ProductService {
 
             const mainImageEntity = await ProductImage.create({image_url: extractRelativePath(mainImage.path), product_id: productEntity.id, is_main_image: true});
             await mainImageEntity.save();
-            for(const image of images) {
-                const imageEntity = await ProductImage.create({image_url: extractRelativePath(image.path), product_id: productEntity.id, is_main_image: false});
-                await imageEntity.save();
+            if (images || images?.length) {
+                for(const image of images) {
+                    const imageEntity = await ProductImage.create({image_url: extractRelativePath(image.path), product_id: productEntity.id, is_main_image: false});
+                    await imageEntity.save();
+                }
             }
             await transaction.commit();
             return {
@@ -177,7 +206,7 @@ class ProductService {
                 total_earnings: productEntity.total_earnings,
                 time_bought: productEntity.time_bought,
                 main_image: mainImage.path,
-                images: images.map(image => image.path),
+                images: images?.map(image => image.path) || [],
                 owner: {
                     last_name: userEntity.last_name,
                     first_name: userEntity.first_name,
@@ -185,12 +214,13 @@ class ProductService {
                 }
             }
         } catch (e) {
+            console.log("error",e)
             await transaction.rollback();
             throw new Error(e);
         }
     }
 
-    async updateProduct(product: {id: number, name: string, description: string, price: number}, userDto: UserDto) {
+    async updateProduct(product: {id: number, name: string, description: string, price: number, is_published: boolean}, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
@@ -207,6 +237,7 @@ class ProductService {
             productEntity.name = product.name;
             productEntity.description = product.description;
             productEntity.price = product.price;
+            productEntity.is_published = product.is_published;
             await productEntity.save();
             await transaction.commit();
             return productEntity;

@@ -28,9 +28,17 @@ class ProductController {
 
     async getOwnersProducts(req: Request, res: Response, next: NextFunction) {
         try {
-            console.log("router")
             //@ts-ignore
             const products = await productService.getOwnersProducts(req.user);
+            return res.json(products);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async getProductsByIds(req: Request, res: Response, next: NextFunction) {
+        try {
+            const products = await productService.getProductsByIds(req.body.ids);
             return res.json(products);
         } catch (e) {
             next(e);
