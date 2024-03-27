@@ -10,7 +10,6 @@ class AuthController {
             if (!errors.isEmpty()) {
                 return new Error("Please provide valid data");
             }
-            console.log("body", req.body)
             const data = await authService.createUser(req.body);
             res.cookie(COOKIES_REFRESH_TOKEN, data?.refresh_token, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true});
             return res.json(data);

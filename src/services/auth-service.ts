@@ -88,6 +88,7 @@ class AuthService {
             await userEntity.save();
             const {userDto: newUserDto, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
             await transaction.commit();
+            console.log(userEntity, "user")
             return {
                 ...newUserDto,
                 access_token: accessToken,
@@ -162,10 +163,13 @@ class AuthService {
             throw ApiError.UnauthorizedError();
         }
         const {userDto: user, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
+        const isAdmin = await Admin.findOne({where: {user_id: userEntity.id}});
+        console.log("is admin", isAdmin)
         return {
             ...user,
             access_token: accessToken,
             refresh_token: refreshToken,
+            isAdmin: !!isAdmin,
         }
     }
 

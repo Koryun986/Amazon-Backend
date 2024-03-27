@@ -8,7 +8,6 @@ class FavoriteProductsService {
     async getFavorites(userDto: UserDto) {
         const userEntity = await this.getUserEntityFromDto(userDto);
         const favoriteEntities = await FavoriteProduct.findAll({where: {user_id: userEntity.id}});
-        console.log("favorites ",favoriteEntities)
         return favoriteEntities;
     }
 
