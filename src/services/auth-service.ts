@@ -149,12 +149,16 @@ class AuthService {
         }
     }
 
-    async makeAdmin(newAdminId: number) {
-        const isAdminExist = await Admin.findOne({where: {user_id: newAdminId}});
+    async makeAdmin(email: string) {
+        const user = await User.findOne({where: {email}});
+        if (!user) {
+            throw ApiError.BadRequest("User with this email doesn't exist");
+        }
+        const isAdminExist = await Admin.findOne({where: {user_id: user.id}});
         if (isAdminExist) {
             return;
         }
-        const adminEntity = await Admin.create({user_id: newAdminId});
+        const adminEntity = await Admin.create({user_id: user.id});
         await adminEntity.save();
     }
 
@@ -174,16 +178,17 @@ class AuthService {
     }
 
     async getUsers() {
-        const admins = await Admin.findAll({raw: true, attributes: ["user_id"]});
+        const admins = (await Admin.findAll()).map(admin => admin.user_id);
         const users = await User.findAll({
             where: {
-                user_id: {
-                    [Op.not]: {
-                        [Op.in]: admins
+                [Op.not]: {
+                    id: {
+                            [Op.in]: admins
+                        }
                     }
                 }
             }
-        });
+        );
         return users;
     }
 

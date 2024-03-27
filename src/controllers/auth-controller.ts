@@ -63,7 +63,7 @@ class AuthController {
 
     async makeAdmin(req: Request, res: Response, next: NextFunction) {
         try {
-            await authService.makeAdmin(req.body.id);
+            await authService.makeAdmin(req.body.email);
             return res.json();
         } catch (error) {
             next(error);
