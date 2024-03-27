@@ -79,6 +79,16 @@ class AuthController {
             next(error);
         }
     }
+
+    async getUsers(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const data = await authService.getUsers();
+            return res.json(data);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new AuthController();

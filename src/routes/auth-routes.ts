@@ -34,6 +34,11 @@ router.post(
 
 router.use(adminGuard);
 
+router.get(
+  "/get-users",
+  authController.getUsers
+)
+
 router.post(
     "/make-admin",
     authController.makeAdmin

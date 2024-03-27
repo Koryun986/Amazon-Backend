@@ -11,6 +11,7 @@ import { Admin } from "../database/models/admin";
 import type { ChangePasswordType, LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
 import {ApiError} from "../exceptions/api-error";
+import {Op} from "@sequelize/core";
 
 class AuthService {
     async createUser(user: UserType) {
@@ -164,13 +165,26 @@ class AuthService {
         }
         const {userDto: user, accessToken, refreshToken} = await this.getTokensAndUserDtoFromUserEntity(userEntity);
         const isAdmin = await Admin.findOne({where: {user_id: userEntity.id}});
-        console.log("is admin", isAdmin)
         return {
             ...user,
             access_token: accessToken,
             refresh_token: refreshToken,
             isAdmin: !!isAdmin,
         }
+    }
+
+    async getUsers() {
+        const admins = await Admin.findAll({raw: true, attributes: ["user_id"]});
+        const users = await User.findAll({
+            where: {
+                user_id: {
+                    [Op.not]: {
+                        [Op.in]: admins
+                    }
+                }
+            }
+        });
+        return users;
     }
 
     private async hashPassword(password: string) {
