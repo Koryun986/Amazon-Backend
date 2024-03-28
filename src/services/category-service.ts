@@ -30,7 +30,8 @@ class CategoryService {
         if (!categoryEntity) {
             throw new Error("Category with this id doesn't exist");
         }
-        await categoryEntity.update(category);
+        categoryEntity.name = category.name;
+        categoryEntity.parent_id = category.parent_id;
         await categoryEntity.save();
         return categoryEntity;
     }

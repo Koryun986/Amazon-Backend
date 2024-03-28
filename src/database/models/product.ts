@@ -24,7 +24,7 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @NotNull
     declare name: string;
 
-    @Attribute(DataTypes.STRING)
+    @Attribute(DataTypes.TEXT)
     @NotNull
     declare description: string;
 
