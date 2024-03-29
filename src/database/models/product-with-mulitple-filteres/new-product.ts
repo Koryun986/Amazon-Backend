@@ -104,7 +104,11 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
   declare images?: NonAttribute<NewProductImage[]>;
 
   @HasMany(() => NewProductImage, {
-    foreignKey: "product_id",
+    foreignKey: {
+      name: "product_id",
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
+    },
     scope: {
       is_main_image: true,
     }

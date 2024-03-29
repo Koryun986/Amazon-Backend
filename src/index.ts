@@ -32,7 +32,7 @@ app.use("/sizes/", sizeRouter);
 app.use("/colors/", colorRouter);
 app.use("/favorite-products/",favoriteProductsRouter);
 app.use("/cart-items/", cartItemsRouter);
-app.use(version2Router);
+app.use("/v2/", version2Router);
 app.use(errorMiddleware);
 
 const startServer = async () => {
