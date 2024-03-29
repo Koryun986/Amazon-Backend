@@ -47,7 +47,9 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
   declare category?: NonAttribute<Category>;
 
   @BelongsToMany(() => Color, {
-    through: "new_product_color"
+    through: "new_product_color",
+    foreignKey: "product_id",
+    otherKey: "color_id",
   })
   declare colors?: NonAttribute<Color>;
 
