@@ -68,28 +68,9 @@ class ProductV2Service {
   }
 
   async getProductById(id: number) {
-    const productEntity = await Product.findOne({where: {is_published: true, id}, include: [
-        {
-          model: Color,
-          attributes: ["name"],
-        },
-        {
-          model: Size,
-          attributes: ["name"],
-        },
-        {
-          model: Category,
-          attributes: ["name"]
-        },
-        {
-          model: ProductImage,
-          attributes: ["image_url", "is_main_image"],
-        },
-        {
-          model: User,
-          attributes: ["first_name", "last_name", "email"],
-        }
-      ]});
+    const productEntity = await NewProduct.findOne({where: {is_published: true, id}, include: {
+      all: true
+    }});
     if (!productEntity) {
       throw new Error("Product with this id doesn't exist");
     }
