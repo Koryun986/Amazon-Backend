@@ -60,7 +60,9 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
   declare removeColor: BelongsToManyRemoveAssociationMixin<Color, Color["id"]>;
 
   @BelongsToMany(() => Size, {
-    through: "new_product_size"
+    through: "new_product_size",
+    foreignKey: "product_id",
+    otherKey: "size_id",
   })
   declare sizes?: NonAttribute<Size>;
 
