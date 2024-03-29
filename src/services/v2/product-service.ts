@@ -82,28 +82,9 @@ class ProductV2Service {
     if (!userEntity) {
       throw ApiError.UnauthorizedError();
     }
-    const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [
-        {
-          model: Color,
-          attributes: ["name"],
-        },
-        {
-          model: Size,
-          attributes: ["name"],
-        },
-        {
-          model: Category,
-          attributes: ["name"]
-        },
-        {
-          model: ProductImage,
-          attributes: ["image_url", "is_main_image"],
-        },
-        {
-          model: User,
-          attributes: ["first_name", "last_name", "email"],
-        }
-      ]});
+    const productEntities = await NewProduct.findAll({where: {owner_id: userEntity.id}, include: {
+      all: true,
+    }});
     return productEntities;
   }
 
