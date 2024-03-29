@@ -156,7 +156,7 @@ class ProductV2Service {
     if (!userEntity) {
       throw ApiError.UnauthorizedError();
     }
-    const productEntity = await Product.findByPk(product.id);
+    const productEntity = await NewProduct.findByPk(product.id);
     if (!productEntity) {
       throw new Error("Product with this id doesn't exist");
     }
