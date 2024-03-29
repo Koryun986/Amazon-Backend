@@ -1,29 +1,17 @@
 import {Op} from "@sequelize/core";
 import sequelize from "../../database";
-import {Product} from "../../database/models/product";
 import {Category} from "../../database/models/category";
 import {Color} from "../../database/models/color";
 import {Size} from "../../database/models/size";
 import {User} from "../../database/models/user";
-import {ProductImage} from "../../database/models/product-images";
 import {ProductParams} from "../../types/product-params-type";
 import {ApiError} from "../../exceptions/api-error";
-import type {ProductDto} from "../../dtos/product-dto";
 import type {UserDto} from "../../dtos/user-dto";
 import {NewProduct} from "../../database/models/product-with-mulitple-filteres/new-product";
 import {NewProductDto} from "../../types/new-product-types";
 import {extractRelativePath} from "../../utils/file-helpers";
 import {NewProductImage} from "../../database/models/product-with-mulitple-filteres/new-product-image";
 
-type ProductReturnType = ProductDto & {
-  id: number;
-  total_earnings: number;
-  time_bought: number;
-  is_published: boolean;
-  main_image: string;
-  images: string[];
-  owner: UserDto;
-}
 
 class ProductV2Service {
   async getProducts(params: object = {}, pagination?: {limit?: string, page?: string}) {
@@ -183,11 +171,8 @@ class ProductV2Service {
     if (!userEntity) {
       throw ApiError.UnauthorizedError();
     }
-    const productImageEntities = await ProductImage.findAll({where: {product_id: id}});
-    for (const image of productImageEntities) {
-      await image.destroy();
-    }
-    const productEntity = await Product.findByPk(id);
+    const productEntity = await NewProduct.findByPk(id);
+    console.log("product", productEntity)
     if (!productEntity) {
       throw new Error("Product with this id doesn't exist");
     }
@@ -198,7 +183,7 @@ class ProductV2Service {
   }
 
   async buyProduct(id: number, times: number) {
-    const productEntity = await Product.findByPk(id);
+    const productEntity = await NewProduct.findByPk(id);
     if (!productEntity) {
       throw new Error("Product with this id doesn't exist");
     }

@@ -20,7 +20,7 @@ module.exports = {
         references: {
           model: "new_products",
           key: "id",
-        }
+        },
       },
       is_main_image: {
         type: Sequelize.BOOLEAN,
