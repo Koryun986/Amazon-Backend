@@ -89,32 +89,15 @@ class ProductV2Service {
   }
 
   async getProductsByIds(ids: number[]) {
-    const products = await Product.findAll({where: {
+    const products = await NewProduct.findAll({where: {
         id: {
           [Op.in]: ids
         }
-      }, include: [
-        {
-          model: Color,
-          attributes: ["name"],
-        },
-        {
-          model: Size,
-          attributes: ["name"],
-        },
-        {
-          model: Category,
-          attributes: ["name"]
-        },
-        {
-          model: ProductImage,
-          attributes: ["image_url", "is_main_image"],
-        },
-        {
-          model: User,
-          attributes: ["first_name", "last_name", "email"],
-        }
-      ]});
+      },
+      include: {
+        all: true
+      }
+    });
     return products;
   }
 
