@@ -29,28 +29,9 @@ class ProductV2Service {
   async getProducts(params: object = {}, pagination?: {limit?: string, page?: string}) {
     const limit = +pagination?.limit || 8;
     const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
-    const products = await Product.findAll({where: {is_published: true, ...params}, limit, offset, include: [
-        {
-          model: Color,
-          attributes: ["name"],
-        },
-        {
-          model: Size,
-          attributes: ["name"],
-        },
-        {
-          model: Category,
-          attributes: ["name"]
-        },
-        {
-          model: ProductImage,
-          attributes: ["image_url", "is_main_image"],
-        },
-        {
-          model: User,
-          attributes: ["first_name", "last_name", "email"],
-        }
-      ]});
+    const products = await NewProduct.findAll({where: {is_published: true, ...params}, limit, offset, include: {
+      all: true,
+    }});
     return products;
   }
 
