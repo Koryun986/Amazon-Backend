@@ -6,11 +6,14 @@ import {Color} from "../../database/models/color";
 import {Size} from "../../database/models/size";
 import {User} from "../../database/models/user";
 import {ProductImage} from "../../database/models/product-images";
-import {extractRelativePath} from "../../utils/file-helpers";
 import {ProductParams} from "../../types/product-params-type";
 import {ApiError} from "../../exceptions/api-error";
 import type {ProductDto} from "../../dtos/product-dto";
 import type {UserDto} from "../../dtos/user-dto";
+import {NewProduct} from "../../database/models/product-with-mulitple-filteres/new-product";
+import {NewProductDto} from "../../types/new-product-types";
+import {extractRelativePath} from "../../utils/file-helpers";
+import {NewProductImage} from "../../database/models/product-with-mulitple-filteres/new-product-image";
 
 type ProductReturnType = ProductDto & {
   id: number;
@@ -172,32 +175,34 @@ class ProductV2Service {
     return products;
   }
 
-  async createProduct({ productDto, images, mainImage }: { productDto: ProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto) {
+  async createProduct({ productDto, images, mainImage }: { productDto: NewProductDto, mainImage: Express.Multer.File, images: Express.Multer.File[] }, user: UserDto) {
     const userEntity = await User.findOne({where: {email: user.email}});
     if (!userEntity) {
       throw ApiError.UnauthorizedError();
     }
-    const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
+    const {categoryEntity, sizeEntities, colorEntities} = await this.getEntitiesByNames({colors: productDto.colors, sizes: productDto.sizes, category: productDto.category});
     const transaction = await sequelize.startUnmanagedTransaction();
     try {
       //@ts-ignore
-      const productEntity = await Product.create({
+      const productEntity = await NewProduct.create({
         ...productDto,
-        color_id: colorEntity.id,
-        size_id: sizeEntity.id,
         category_id: categoryEntity.id,
-        owner_id: userEntity.id
+        total_earnings: 0,
+        owner_id: userEntity.id,
+        time_bought: 0,
       });
-      await productEntity.save();
+      await productEntity.setColors(colorEntities);
+      await productEntity.setSizes(sizeEntities);
 
-      const mainImageEntity = await ProductImage.create({image_url: extractRelativePath(mainImage.path), product_id: productEntity.id, is_main_image: true});
+      const mainImageEntity = await NewProductImage.create({image_url: extractRelativePath(mainImage.path), product_id: productEntity.id, is_main_image: true});
       await mainImageEntity.save();
       if (images || images?.length) {
         for(const image of images) {
-          const imageEntity = await ProductImage.create({image_url: extractRelativePath(image.path), product_id: productEntity.id, is_main_image: false});
+          const imageEntity = await NewProductImage.create({image_url: extractRelativePath(image.path), product_id: productEntity.id, is_main_image: false});
           await imageEntity.save();
         }
       }
+      await productEntity.save();
       await transaction.commit();
       return {
         ...productDto,
@@ -276,23 +281,25 @@ class ProductV2Service {
     await productEntity.save();
   }
 
-  private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
-    const categoryEntity = await Category.findByPk(+category);
+  private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {
+    const categoryEntity = await Category.findByPk(category);
     if (!categoryEntity) {
       throw new Error("Category doesn't exist");
     }
-    const sizeEntity = await Size.findOne({where: {name: size}});
-    if (!sizeEntity) {
-      throw new Error("Size doesn't exist");
-    }
-    const colorEntity = await Color.findOne({where: {name: color}});
-    if (!colorEntity) {
-      throw new Error("Color doesn't exist");
-    }
+    const sizeEntities = await Size.findAll({where: {
+        name: {
+          [Op.in]: sizes
+        }
+    }});
+    const colorEntities = await Color.findAll({where: {
+      name: {
+        [Op.in]: colors,
+      }
+    }});
     return {
       categoryEntity,
-      sizeEntity,
-      colorEntity,
+      sizeEntities,
+      colorEntities,
     }
   }
 }

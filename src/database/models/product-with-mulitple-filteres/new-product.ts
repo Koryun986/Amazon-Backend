@@ -51,7 +51,7 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
     foreignKey: "product_id",
     otherKey: "color_id",
   })
-  declare colors?: NonAttribute<Color>;
+  declare colors?: NonAttribute<Color[]>;
 
   declare setColors: BelongsToManySetAssociationsMixin<Color, Color["id"]>;
 
@@ -64,7 +64,7 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
     foreignKey: "product_id",
     otherKey: "size_id",
   })
-  declare sizes?: NonAttribute<Size>;
+  declare sizes?: NonAttribute<Size[]>;
 
   declare setSizes: BelongsToManySetAssociationsMixin<Size, Size["id"]>;
 
