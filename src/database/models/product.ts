@@ -9,11 +9,9 @@ import {
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
 import {Color} from "./color";
-import {Size} from "./size";
 import {Category} from "./category";
 import {ProductImage} from "./product-images";
-import {BelongsToMany, HasMany} from "@sequelize/core/types/decorators/legacy";
-import {ProductColor} from "./product-color";
+import {Size} from "./size";
 
 @Table({tableName: "Products", createdAt: false, updatedAt: false})
 export class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
@@ -45,22 +43,15 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @NotNull
     declare category_id: number;
 
-    // /** Defined by {@link Color.products} */
-    // declare color?: NonAttribute<Color>;
-
-    @BelongsToMany(() => Color, {
-        through: {
-            model: ProductColor,
-        },
-    })
-    declare colors?: NonAttribute<Color[]>;
+    /** Defined by {@link Color.products} */
+    declare color?: NonAttribute<Color>;
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare color_id: number;
 
-    // /** Defined by {@link Size.products} */
-    // declare size?: NonAttribute<Size>;
+    /** Defined by {@link Size.products} */
+    declare size?: NonAttribute<Size>;
 
     @Attribute(DataTypes.INTEGER)
     @NotNull
