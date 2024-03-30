@@ -18,6 +18,7 @@ class ProductV2Service {
   async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
     const limit = +pagination?.limit || 8;
     const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
+    console.log("include where params", includeWhereParams)
     const products = await NewProduct.findAll({where: {is_published: true, ...params}, limit, offset, include: [
         {
           model: Color,
@@ -56,17 +57,19 @@ class ProductV2Service {
       }
     }
     if (params.size) {
+      const sizes = params.size.split(",");
       includeWhereParams.size = {
-        id: Array.isArray(params.size) ? {
-          [Op.in]: params.size.map(size => +size)
-        } : +params.size
+        id: {
+          [Op.in]: sizes
+        }
       }
     }
     if (params.color) {
+      const colors = params.color.split(",");
       includeWhereParams.color = {
-          id: Array.isArray(params.color) ? {
-            [Op.in]: params.color.map(color => +color)
-          } : +params.color
+          id: {
+            [Op.in]: colors
+          }
       }
     }
     if (params.category) {
