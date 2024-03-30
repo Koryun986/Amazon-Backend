@@ -9,7 +9,7 @@ import {
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {Product} from "./product";
 
-@Table({tableName: "Product_Images"})
+@Table({tableName: "product_images"})
 export class ProductImage extends Model<InferAttributes<ProductImage>, InferCreationAttributes<ProductImage>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
@@ -28,18 +28,4 @@ export class ProductImage extends Model<InferAttributes<ProductImage>, InferCrea
     @NotNull
     @Default(false)
     declare is_main_image: boolean;
-
-    @BelongsTo(() => Product, {
-        foreignKey: {
-            name: "product_id",
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
-        },
-        inverse: {
-            as: "images",
-            type: "hasMany"
-        },
-
-    })
-    declare product: NonAttribute<Product>
 }

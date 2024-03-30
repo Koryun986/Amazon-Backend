@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("Cart_Items", {
+    await queryInterface.createTable("cart_items", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -19,36 +19,40 @@ module.exports = {
         type: Sequelize.INTEGER,
         notNull: true,
         references: {
-          model: "Products",
+          model: "products",
           key: "id",
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
         }
       },
       user_id: {
         type: Sequelize.INTEGER,
         notNull: true,
         references: {
-          model: "Users",
+          model: "users",
           key: "id",
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
         }
       }
     });
-    await queryInterface.addConstraint("Cart_Items", {
+    await queryInterface.addConstraint("cart_items", {
       fields: ['product_id'],
       type: 'foreign key',
       name: 'product_id',
       references: {
-        table: 'Products',
+        table: 'products',
         field: 'id'
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE'
     });
-    await queryInterface.addConstraint("Cart_Items", {
+    await queryInterface.addConstraint("cart_items", {
       fields: ['user_id'],
       type: 'foreign key',
       name: 'user_id',
       references: {
-        table: 'Users',
+        table: 'users',
         field: 'id'
       },
       onUpdate: 'CASCADE',
@@ -57,8 +61,8 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeConstraint("Cart_Items", "product_id");
-    await queryInterface.removeConstraint("Cart_Items", "user_id");
-    await queryInterface.dropTable("Cart_Items");
+    await queryInterface.removeConstraint("cart_items", "product_id");
+    await queryInterface.removeConstraint("cart_items", "user_id");
+    await queryInterface.dropTable("cart_items");
   }
 };

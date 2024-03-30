@@ -3,15 +3,18 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("admins", {
+    await queryInterface.createTable("tokens", {
       id: {
-        notNull: true,
-        primaryKey: true,
+        allowNull: false,
         autoIncrement: true,
+        primaryKey: true,
         type: Sequelize.INTEGER
       },
+      refresh_token: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       user_id: {
-        notNull: true,
         type: Sequelize.INTEGER,
         references: {
           model: "users",
@@ -19,15 +22,15 @@ module.exports = {
           onUpdate: 'CASCADE',
           onDelete: 'CASCADE'
         }
-      }
+      },
     });
-    await queryInterface.addConstraint("admins", {
-      fields: ["user_id"],
-      type: "foreign key",
-      name: "user_id",
+    await queryInterface.addConstraint('tokens', {
+      fields: ['user_id'],
+      type: 'foreign key',
+      name: 'user_id',
       references: {
-        table: "users",
-        field: "id",
+        table: 'users',
+        field: 'id'
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE'
@@ -35,7 +38,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeConstraint("admins", "user_id");
-    await queryInterface.dropTable("admins");
+    await queryInterface.removeConstraint("tokens", "user_id");
+    await queryInterface.dropTable("tokens");
   }
 };

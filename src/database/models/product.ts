@@ -4,16 +4,16 @@ import {
     InferAttributes,
     InferCreationAttributes,
     CreationOptional,
-    NonAttribute
+    NonAttribute, BelongsToManySetAssociationsMixin, BelongsToManyAddAssociationMixin, BelongsToManyRemoveAssociationMixin
 } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo, BelongsToMany, HasMany, HasOne } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
+import {Size} from "./size";
+import {ProductImage} from "./product-images";
 import {Color} from "./color";
 import {Category} from "./category";
-import {ProductImage} from "./product-images";
-import {Size} from "./size";
 
-@Table({tableName: "Products", createdAt: false, updatedAt: false})
+@Table({tableName: "products", createdAt: false, updatedAt: false})
 export class Product extends Model<InferAttributes<Product>, InferCreationAttributes<Product>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
@@ -36,26 +36,40 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @NotNull
     declare price: number;
 
-    /** Defined by {@link Category.products} */
-    declare category?: NonAttribute<Category>;
-
     @Attribute(DataTypes.INTEGER)
     @NotNull
     declare category_id: number;
 
-    /** Defined by {@link Color.products} */
-    declare color?: NonAttribute<Color>;
+    @BelongsTo(() => Category, {
+        foreignKey: "category_id",
+    })
+    declare category?: NonAttribute<Category>;
 
-    @Attribute(DataTypes.INTEGER)
-    @NotNull
-    declare color_id: number;
+    @BelongsToMany(() => Color, {
+        through: "product_color",
+        foreignKey: "product_id",
+        otherKey: "color_id",
+    })
+    declare colors?: NonAttribute<Color[]>;
 
-    /** Defined by {@link Size.products} */
-    declare size?: NonAttribute<Size>;
+    declare setColors: BelongsToManySetAssociationsMixin<Color, Color["id"]>;
 
-    @Attribute(DataTypes.INTEGER)
-    @NotNull
-    declare size_id: number;
+    declare addColor: BelongsToManyAddAssociationMixin<Color, Color["id"]>;
+
+    declare removeColor: BelongsToManyRemoveAssociationMixin<Color, Color["id"]>;
+
+    @BelongsToMany(() => Size, {
+        through: "product_size",
+        foreignKey: "product_id",
+        otherKey: "size_id",
+    })
+    declare sizes?: NonAttribute<Size[]>;
+
+    declare setSizes: BelongsToManySetAssociationsMixin<Size, Size["id"]>;
+
+    declare addSize: BelongsToManyAddAssociationMixin<Size, Size["id"]>;
+
+    declare removeSize: BelongsToManyRemoveAssociationMixin<Size, Size["id"]>;
 
     @Attribute(DataTypes.BOOLEAN)
     @NotNull
@@ -76,8 +90,29 @@ export class Product extends Model<InferAttributes<Product>, InferCreationAttrib
     @NotNull
     declare owner_id: number;
 
-    /** Declared by {@link ProductImage#product} */
-    declare images?: ProductImage[];
+    @HasMany(() => ProductImage, {
+        foreignKey: {
+            name: "product_id",
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
+        },
+        scope: {
+            is_main_image: false,
+        },
+    })
+    declare images?: NonAttribute<ProductImage[]>;
+
+    @HasOne(() => ProductImage, {
+        foreignKey: {
+            name: "product_id",
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
+        },
+        scope: {
+            is_main_image: true,
+        }
+    })
+    declare main_image?: NonAttribute<ProductImage>;
 
     @BelongsTo(() => User, "owner_id")
     declare owner?: NonAttribute<User>

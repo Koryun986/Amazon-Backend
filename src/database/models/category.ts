@@ -3,7 +3,7 @@ import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, HasMany } from "@
 import {Product} from "./product";
 import {NonAttribute} from "sequelize";
 
-@Table({tableName: "Categories"})
+@Table({tableName: "categories"})
 export class Category extends Model<InferAttributes<Category>, InferCreationAttributes<Category>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey

@@ -9,7 +9,7 @@ import {
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
 
-@Table({tableName: "Favorite_Products", createdAt: false, updatedAt: false})
+@Table({tableName: "favorite_products", createdAt: false, updatedAt: false})
 export class FavoriteProduct extends Model<InferAttributes<FavoriteProduct>, InferCreationAttributes<FavoriteProduct>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey

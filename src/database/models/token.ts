@@ -6,9 +6,10 @@ import {
     Model,
     NonAttribute
 } from "@sequelize/core";
-import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo } from "@sequelize/core/decorators-legacy";
+import { Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo, Table } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
 
+@Table({tableName: "tokens"})
 export class Token extends Model<InferAttributes<Token>, InferCreationAttributes<Token>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey

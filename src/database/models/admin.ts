@@ -9,7 +9,7 @@ import {
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
 
-@Table({tableName: "Admins"})
+@Table({tableName: "admins"})
 export class Admin extends Model<InferAttributes<Admin>, InferCreationAttributes<Admin>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey

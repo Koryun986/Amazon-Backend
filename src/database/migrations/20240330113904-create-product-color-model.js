@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("new_product_size", {
+    await queryInterface.createTable("product_color", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -13,35 +13,35 @@ module.exports = {
       product_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "new_products",
+          model: "products",
           key: "id"
         }
       },
-      size_id: {
+      color_id: {
         type: Sequelize.INTEGER,
         references: {
-          model: "Sizes",
+          model: "colors",
           key: "id"
         }
       }
     });
-    await queryInterface.addConstraint('new_product_size', {
+    await queryInterface.addConstraint('product_color', {
       fields: ['product_id'],
       type: 'foreign key',
       name: 'product_id',
       references: {
-        table: 'new_products',
+        table: 'products',
         field: 'id'
       },
       onUpdate: 'NO ACTION',
       onDelete: 'NO ACTION'
     });
-    await queryInterface.addConstraint("new_product_size", {
-      fields: ['size_id'],
+    await queryInterface.addConstraint("product_color", {
+      fields: ['color_id'],
       type: 'foreign key',
-      name: 'size_id',
+      name: 'color_id',
       references: {
-        table: 'Sizes',
+        table: 'colors',
         field: 'id'
       },
       onUpdate: 'NO ACTION',
@@ -50,8 +50,8 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeConstraint("new_product_size", "product_id");
-    await queryInterface.removeConstraint("new_product_size", "size_id");
-    await queryInterface.dropTable("new_product_size");
+    await queryInterface.removeConstraint("product_color", "product_id");
+    await queryInterface.removeConstraint("product_color", "color_id");
+    await queryInterface.dropTable("product_color");
   }
 };

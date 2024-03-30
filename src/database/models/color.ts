@@ -6,10 +6,9 @@ import {
     CreationOptional,
     NonAttribute
 } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, HasMany } from "@sequelize/core/decorators-legacy";
-import {Product} from "./product";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull } from "@sequelize/core/decorators-legacy";
 
-@Table({tableName: "Colors"})
+@Table({tableName: "colors"})
 export class Color extends Model<InferAttributes<Color>, InferCreationAttributes<Color>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey
@@ -19,12 +18,4 @@ export class Color extends Model<InferAttributes<Color>, InferCreationAttributes
     @Attribute(DataTypes.STRING)
     @NotNull
     declare name: string;
-
-    @HasMany(() => Product, {
-        foreignKey: "color_id",
-        inverse: {
-            as: "color",
-        },
-    })
-    declare products?: NonAttribute<Product[]>;
 }

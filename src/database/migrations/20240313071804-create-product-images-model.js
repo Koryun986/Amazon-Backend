@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("Product_Images", {
+    await queryInterface.createTable("product_images", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -18,9 +18,11 @@ module.exports = {
         type: Sequelize.INTEGER,
         notNull: true,
         references: {
-          model: "Products",
+          model: "products",
           key: "id",
-        }
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
+        },
       },
       is_main_image: {
         type: Sequelize.BOOLEAN,
@@ -28,12 +30,12 @@ module.exports = {
         default: false,
       }
     });
-    await queryInterface.addConstraint("Product_Images", {
+    await queryInterface.addConstraint("product_images", {
       fields: ['product_id'],
       type: 'foreign key',
       name: 'product_id',
       references: {
-        table: 'Products',
+        table: 'products',
         field: 'id'
       },
       onUpdate: 'CASCADE',
@@ -42,7 +44,7 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeConstraint("Product_Images", "product_id");
-    await queryInterface.dropTable("Product_Images");
+    await queryInterface.removeConstraint("product_images", "product_id");
+    await queryInterface.dropTable("product_images");
   }
 };

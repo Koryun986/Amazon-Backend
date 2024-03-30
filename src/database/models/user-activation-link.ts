@@ -9,7 +9,7 @@ import {
 import { Attribute, AutoIncrement, NotNull, PrimaryKey, Table, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
 
-@Table({tableName: "user-activation-links"})
+@Table({tableName: "user_activation_links"})
 export class UserActivationLink extends Model<InferAttributes<UserActivationLink>, InferCreationAttributes<UserActivationLink>> {
     @Attribute(DataTypes.INTEGER)
     @AutoIncrement

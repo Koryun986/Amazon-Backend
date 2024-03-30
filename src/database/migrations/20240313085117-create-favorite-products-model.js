@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("Favorite_Products", {
+    await queryInterface.createTable("favorite_products", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -14,36 +14,40 @@ module.exports = {
         type: Sequelize.INTEGER,
         notNull: true,
         references: {
-          model: "Products",
+          model: "products",
           key: "id",
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
         }
       },
       user_id: {
         type: Sequelize.INTEGER,
         notNull: true,
         references: {
-          model: "Users",
+          model: "users",
           key: "id",
+          onUpdate: 'CASCADE',
+          onDelete: 'CASCADE'
         }
       }
     });
-    await queryInterface.addConstraint("Favorite_Products", {
+    await queryInterface.addConstraint("favorite_products", {
       fields: ['product_id'],
       type: 'foreign key',
       name: 'product_id',
       references: {
-        table: 'Products',
+        table: 'products',
         field: 'id'
       },
       onUpdate: 'CASCADE',
       onDelete: 'CASCADE'
     });
-    await queryInterface.addConstraint("Favorite_Products", {
+    await queryInterface.addConstraint("favorite_products", {
       fields: ['user_id'],
       type: 'foreign key',
       name: 'user_id',
       references: {
-        table: 'Users',
+        table: 'users',
         field: 'id'
       },
       onUpdate: 'CASCADE',
@@ -52,8 +56,8 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeConstraint("Favorite_Products", "product_id");
-    await queryInterface.removeConstraint("Favorite_Products", "user_id");
-    await queryInterface.dropTable("Favorite_Products");
+    await queryInterface.removeConstraint("favorite_products", "product_id");
+    await queryInterface.removeConstraint("favorite_products", "user_id");
+    await queryInterface.dropTable("favorite_products");
   }
 };

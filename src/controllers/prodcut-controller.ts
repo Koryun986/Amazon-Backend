@@ -57,6 +57,7 @@ class ProductController {
                     ...req.body,
                     is_published: req.body.is_published === "true" ? true : false,
                     price: +req.body.price,
+                    category: +req.body.category
                 },
                 mainImage,
                 images,

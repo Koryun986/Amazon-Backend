@@ -9,7 +9,7 @@ import {
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
 
-@Table({tableName: "Cart_Items", createdAt: false, updatedAt: false})
+@Table({tableName: "cart_items", createdAt: false, updatedAt: false})
 export class CartItem extends Model<InferAttributes<CartItem>, InferCreationAttributes<CartItem>> {
     @Attribute(DataTypes.INTEGER)
     @PrimaryKey

@@ -23,36 +23,29 @@ type ProductReturnType = ProductDto & {
 }
 
 class ProductService {
-    async getProducts(params: object = {}, pagination?: {limit?: string, page?: string}) {
+    async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
         const limit = +pagination?.limit || 8;
         const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
+        console.log("include where params", includeWhereParams)
         const products = await Product.findAll({where: {is_published: true, ...params}, limit, offset, include: [
-            {
-                model: Color,
-                attributes: ["name"],
-            },
-            {
-                model: Size,
-                attributes: ["name"],
-            },
-            {
-                model: Category,
-                attributes: ["name"]
-            },
-            {
-                model: ProductImage,
-                attributes: ["image_url", "is_main_image"],
-            },
-            {
-                model: User,
-                attributes: ["first_name", "last_name", "email"],
-            }
-        ]});
+                {
+                    model: Color,
+                    where: includeWhereParams?.color || {},
+                },
+                {
+                    model: Size,
+                    where: includeWhereParams?.size || {},
+                },
+                {
+                    all: true
+                }
+            ]});
         return products;
     }
 
     async getProductsByParams(params: ProductParams) {
         const query: any = {};
+        const includeWhereParams: any = {};
         if (params.text) {
             query[Op.or] = {
                 name: {
@@ -72,40 +65,31 @@ class ProductService {
             }
         }
         if (params.size) {
-            query.size_id = +params.size;
+            const sizes = params.size.split(",");
+            includeWhereParams.size = {
+                id: {
+                    [Op.in]: sizes
+                }
+            }
         }
         if (params.color) {
-            query.color_id = +params.color;
+            const colors = params.color.split(",");
+            includeWhereParams.color = {
+                id: {
+                    [Op.in]: colors
+                }
+            }
         }
         if (params.category) {
             query.category_id = +params.category;
         }
-        return await this.getProducts(query, params);
+        return await this.getProducts(query, includeWhereParams, params);
     }
 
     async getProductById(id: number) {
-        const productEntity = await Product.findOne({where: {is_published: true, id}, include: [
-            {
-                model: Color,
-                attributes: ["name"],
-            },
-            {
-                model: Size,
-                attributes: ["name"],
-            },
-            {
-                model: Category,
-                attributes: ["name"]
-            },
-            {
-                model: ProductImage,
-                attributes: ["image_url", "is_main_image"],
-            },
-            {
-                model: User,
-                attributes: ["first_name", "last_name", "email"],
-            }
-        ]});
+        const productEntity = await Product.findOne({where: {is_published: true, id}, include: {
+                all: true
+            }});
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
@@ -117,58 +101,22 @@ class ProductService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: [
-                {
-                    model: Color,
-                    attributes: ["name"],
-                },
-                {
-                    model: Size,
-                    attributes: ["name"],
-                },
-                {
-                    model: Category,
-                    attributes: ["name"]
-                },
-                {
-                    model: ProductImage,
-                    attributes: ["image_url", "is_main_image"],
-                },
-                {
-                    model: User,
-                    attributes: ["first_name", "last_name", "email"],
-                }
-        ]});
+        const productEntities = await Product.findAll({where: {owner_id: userEntity.id}, include: {
+                all: true,
+            }});
         return productEntities;
     }
 
     async getProductsByIds(ids: number[]) {
         const products = await Product.findAll({where: {
-            id: {
-                [Op.in]: ids
+                id: {
+                    [Op.in]: ids
+                }
+            },
+            include: {
+                all: true
             }
-        }, include: [
-            {
-                model: Color,
-                attributes: ["name"],
-            },
-            {
-                model: Size,
-                attributes: ["name"],
-            },
-            {
-                model: Category,
-                attributes: ["name"]
-            },
-            {
-                model: ProductImage,
-                attributes: ["image_url", "is_main_image"],
-            },
-            {
-                model: User,
-                attributes: ["first_name", "last_name", "email"],
-            }
-        ]});
+        });
         return products;
     }
 
@@ -177,18 +125,19 @@ class ProductService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        const { colorEntity, sizeEntity, categoryEntity } = await this.getEntitiesByNames({color: productDto.color, size: productDto.size, category: productDto.category});
+        const {categoryEntity, sizeEntities, colorEntities} = await this.getEntitiesByNames({colors: productDto.colors, sizes: productDto.sizes, category: productDto.category});
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
             //@ts-ignore
             const productEntity = await Product.create({
                 ...productDto,
-                color_id: colorEntity.id,
-                size_id: sizeEntity.id,
                 category_id: categoryEntity.id,
-                owner_id: userEntity.id
+                total_earnings: 0,
+                owner_id: userEntity.id,
+                time_bought: 0,
             });
-            await productEntity.save();
+            await productEntity.setColors(colorEntities);
+            await productEntity.setSizes(sizeEntities);
 
             const mainImageEntity = await ProductImage.create({image_url: extractRelativePath(mainImage.path), product_id: productEntity.id, is_main_image: true});
             await mainImageEntity.save();
@@ -198,6 +147,7 @@ class ProductService {
                     await imageEntity.save();
                 }
             }
+            await productEntity.save();
             await transaction.commit();
             return {
                 ...productDto,
@@ -252,10 +202,6 @@ class ProductService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        const productImageEntities = await ProductImage.findAll({where: {product_id: id}});
-        for (const image of productImageEntities) {
-            await image.destroy();
-        }
         const productEntity = await Product.findByPk(id);
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
@@ -276,23 +222,25 @@ class ProductService {
         await productEntity.save();
     }
 
-    private async getEntitiesByNames({color, size, category}: {color: string, size: string, category: string}) {
-        const categoryEntity = await Category.findByPk(+category);
+    private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {
+        const categoryEntity = await Category.findByPk(category);
         if (!categoryEntity) {
             throw new Error("Category doesn't exist");
         }
-        const sizeEntity = await Size.findOne({where: {name: size}});
-        if (!sizeEntity) {
-            throw new Error("Size doesn't exist");
-        }
-        const colorEntity = await Color.findOne({where: {name: color}});
-        if (!colorEntity) {
-            throw new Error("Color doesn't exist");
-        }
+        const sizeEntities = await Size.findAll({where: {
+                name: {
+                    [Op.in]: sizes
+                }
+            }});
+        const colorEntities = await Color.findAll({where: {
+                name: {
+                    [Op.in]: colors,
+                }
+            }});
         return {
             categoryEntity,
-            sizeEntity,
-            colorEntity,
+            sizeEntities,
+            colorEntities,
         }
     }
 }
