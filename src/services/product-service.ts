@@ -12,34 +12,23 @@ import {ProductParams} from "../types/product-params-type";
 import {Op} from "@sequelize/core";
 import {ApiError} from "../exceptions/api-error";
 
-type ProductReturnType = ProductDto & {
-    id: number;
-    total_earnings: number;
-    time_bought: number;
-    is_published: boolean;
-    main_image: string;
-    images: string[];
-    owner: UserDto;
-}
-
 class ProductService {
     async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
         const limit = +pagination?.limit || 8;
         const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
-        console.log("include where params", includeWhereParams)
         const products = await Product.findAll({where: {is_published: true, ...params}, limit, offset, include: [
-                {
-                    model: Color,
-                    where: includeWhereParams?.color || {},
-                },
-                {
-                    model: Size,
-                    where: includeWhereParams?.size || {},
-                },
-                {
-                    all: true
-                }
-            ]});
+            {
+                model: Color,
+                where: includeWhereParams?.color || {},
+            },
+            {
+                model: Size,
+                where: includeWhereParams?.size || {},
+            },
+            {
+                all: true
+            }
+        ]});
         return products;
     }
 
