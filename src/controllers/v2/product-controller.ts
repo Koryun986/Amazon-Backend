@@ -9,6 +9,7 @@ class ProductV2Controller {
       if (!params) {
         products = await productService.getProducts();
       } else {
+        console.log("params", params)
         products = await productService.getProductsByParams(params);
       }
       return res.json(products);

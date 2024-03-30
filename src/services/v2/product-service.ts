@@ -11,20 +11,32 @@ import {NewProduct} from "../../database/models/product-with-mulitple-filteres/n
 import {NewProductDto} from "../../types/new-product-types";
 import {extractRelativePath} from "../../utils/file-helpers";
 import {NewProductImage} from "../../database/models/product-with-mulitple-filteres/new-product-image";
+import {isArray} from "util";
 
 
 class ProductV2Service {
-  async getProducts(params: object = {}, pagination?: {limit?: string, page?: string}) {
+  async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
     const limit = +pagination?.limit || 8;
     const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
-    const products = await NewProduct.findAll({where: {is_published: true, ...params}, limit, offset, include: {
-      all: true,
-    }});
+    const products = await NewProduct.findAll({where: {is_published: true, ...params}, limit, offset, include: [
+        {
+          model: Color,
+          where: includeWhereParams?.color || {},
+        },
+        {
+          model: Size,
+          where: includeWhereParams?.size || {},
+        },
+        {
+          all: true
+        }
+    ]});
     return products;
   }
 
   async getProductsByParams(params: ProductParams) {
     const query: any = {};
+    const includeWhereParams: any = {};
     if (params.text) {
       query[Op.or] = {
         name: {
@@ -44,15 +56,23 @@ class ProductV2Service {
       }
     }
     if (params.size) {
-      query.size_id = +params.size;
+      includeWhereParams.size = {
+        id: Array.isArray(params.size) ? {
+          [Op.in]: params.size.map(size => +size)
+        } : +params.size
+      }
     }
     if (params.color) {
-      query.color_id = +params.color;
+      includeWhereParams.color = {
+          id: Array.isArray(params.color) ? {
+            [Op.in]: params.color.map(color => +color)
+          } : +params.color
+      }
     }
     if (params.category) {
       query.category_id = +params.category;
     }
-    return await this.getProducts(query, params);
+    return await this.getProducts(query, includeWhereParams, params);
   }
 
   async getProductById(id: number) {

@@ -6,7 +6,7 @@ import {
   CreationOptional,
   NonAttribute, BelongsToManySetAssociationsMixin, BelongsToManyAddAssociationMixin, BelongsToManyRemoveAssociationMixin
 } from "@sequelize/core";
-import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo, BelongsToMany, HasMany } from "@sequelize/core/decorators-legacy";
+import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo, BelongsToMany, HasMany, HasOne } from "@sequelize/core/decorators-legacy";
 import {User} from "../user";
 import {Size} from "../size";
 import {ProductImage} from "../product-images";
@@ -99,11 +99,11 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
     },
     scope: {
       is_main_image: false,
-    }
+    },
   })
   declare images?: NonAttribute<NewProductImage[]>;
 
-  @HasMany(() => NewProductImage, {
+  @HasOne(() => NewProductImage, {
     foreignKey: {
       name: "product_id",
       onDelete: "CASCADE",
@@ -113,7 +113,7 @@ export class NewProduct extends Model<InferAttributes<NewProduct>, InferCreation
       is_main_image: true,
     }
   })
-  declare main_image?: NonAttribute<ProductImage>;
+  declare main_image?: NonAttribute<ProductImage["image_url"]>;
 
   @BelongsTo(() => User, "owner_id")
   declare owner?: NonAttribute<User>
