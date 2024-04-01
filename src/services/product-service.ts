@@ -163,7 +163,7 @@ class ProductService {
         }
     }
 
-    async updateProduct(product: {id: number, name: string, description: string, price: number, is_published: boolean}, userDto: UserDto) {
+    async updateProduct(product: {id: number, name: string, description: string, price: number, colors: string[], sizes: string[], category: number, is_published: boolean}, userDto: UserDto) {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
@@ -177,10 +177,27 @@ class ProductService {
         }
         const transaction = await sequelize.startUnmanagedTransaction();
         try {
+            const colorEntities = await Color.findAll({where: {
+                name: {
+                    [Op.in]: product.colors
+                }
+            }});
+            const sizeEntities = await Size.findAll({where: {
+                name: {
+                    [Op.in]: product.sizes
+                }
+            }});
+            const categoryEntity = await Category.findByPk(product.category);
+            if (!categoryEntity) {
+                throw ApiError.BadRequest("Category with this id doesn't exist");
+            }
             productEntity.name = product.name;
             productEntity.description = product.description;
             productEntity.price = product.price;
             productEntity.is_published = product.is_published;
+            productEntity.category_id = categoryEntity.id;
+            productEntity.setColors(colorEntities);
+            productEntity.setSizes(sizeEntities);
             await productEntity.save();
             await transaction.commit();
             return productEntity;
