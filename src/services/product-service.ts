@@ -16,7 +16,7 @@ class ProductService {
     async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
         const limit = +pagination?.limit || 8;
         const offset = pagination?.page ? (+pagination.page - 1) * limit : 0;
-        const products = await Product.findAll({where: {is_published: true, ...params}, limit, offset, include: [
+        const {rows, count} = await Product.findAndCountAll({where: {is_published: true, ...params}, limit, offset, include: [
             {
                 model: Color,
                 where: includeWhereParams?.color || {},
@@ -26,10 +26,14 @@ class ProductService {
                 where: includeWhereParams?.size || {},
             },
             {
-                all: true
-            }
-        ]});
-        return products;
+                association: "images"
+            },
+            {
+                association: "main_image"
+            },
+            Category, User
+        ], distinct: true});
+        return {count, products: rows};
     }
 
     async getProductsByParams(params: ProductParams) {
