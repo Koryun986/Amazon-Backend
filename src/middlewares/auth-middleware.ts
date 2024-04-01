@@ -6,9 +6,31 @@ import { Admin } from "../database/models/admin";
 import type { UserDto } from "../dtos/user-dto";
 import {ApiError} from "../exceptions/api-error";
 
-export async function authGuard(req: Request, res: Response, next: NextFunction) {
+export async function authGuardWithoutVerifyingUser(req: Request, res: Response, next: NextFunction) {
     try {
         console.log("auth", req.url)
+        if (!req.headers.authorization) {
+            throw ApiError.UnauthorizedError();
+        }
+        const accessToken = getAccessTokenFromBearer(req.headers.authorization);
+        const userDto = tokenService.validateAccessToken(accessToken) as UserDto;
+        if (!userDto) {
+            throw ApiError.UnauthorizedError();
+        }
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw ApiError.UnauthorizedError();
+        }
+        //@ts-ignore
+        req.user = userDto;
+        next();
+    } catch (e) {
+        next(e);
+    }
+}
+
+export async function authGuard(req: Request, res: Response, next: NextFunction) {
+    try {
         if (!req.headers.authorization) {
             throw ApiError.UnauthorizedError();
         }

@@ -1,8 +1,14 @@
 import {Router} from "express";
-import {authGuard} from "../middlewares/auth-middleware";
+import {authGuard, authGuardWithoutVerifyingUser} from "../middlewares/auth-middleware";
 import cartItemController from "../controllers/cart-item-controller";
 
 const router = Router();
+
+router.post(
+    "/add-many",
+    authGuardWithoutVerifyingUser,
+    cartItemController.addCartItems
+);
 
 router.use(authGuard);
 
@@ -13,10 +19,6 @@ router.get(
 router.post(
     "/add/:id",
     cartItemController.addCartItem
-);
-router.post(
-    "/add-many",
-    cartItemController.addCartItems
 );
 router.post(
     "/set-item",

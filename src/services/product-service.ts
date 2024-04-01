@@ -74,7 +74,11 @@ class ProductService {
             }
         }
         if (params.category) {
-            query.category_id = +params.category;
+            const allChildIds = await this.getAllChildCategoryIdsById(+params.category);
+            console.log("child ids", allChildIds)
+            query.category_id = {
+                [Op.in]: [+params.category, ...allChildIds]
+            };
         }
         return await this.getProducts(query, includeWhereParams, params);
     }
@@ -252,6 +256,18 @@ class ProductService {
             sizeEntities,
             colorEntities,
         }
+    }
+
+    private async getAllChildCategoryIdsById(id: number) {
+        const categories = await Category.findAll({where: {parent_id: id}});
+        if (!categories.length) {
+            return [];
+        }
+        const childCategoryIds = categories.map(category => category.id);
+        for(const category of categories) {
+            childCategoryIds.push(...(await this.getAllChildCategoryIdsById(category.id)));
+        }
+        return childCategoryIds;
     }
 }
 
