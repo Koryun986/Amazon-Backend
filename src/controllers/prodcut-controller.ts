@@ -57,7 +57,9 @@ class ProductController {
                     ...req.body,
                     is_published: req.body.is_published === "true" ? true : false,
                     price: +req.body.price,
-                    category: +req.body.category
+                    category: +req.body.category,
+                    colors: Array.isArray(req.body.colors) ? req.body.colors : [req.body.colors],
+                    sizes: Array.isArray(req.body.sizes) ? req.body.sizes :[req.body.sizes]
                 },
                 mainImage,
                 images,
@@ -92,8 +94,17 @@ class ProductController {
 
     async buyProduct(req: Request, res: Response, next: NextFunction) {
         try {
-            await productService.buyProduct(req.body.id, req.body.times);
-            return res.json();
+            const data = await productService.buyProduct(req.body.id, req.body.count, req.headers.origin);
+            return res.json(data);
+        } catch (e) {
+            next(e);
+        }
+    }
+
+    async buyProductClientSecret(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await productService.buyProductClientSecret(req.body.id, req.body.count, req.headers.origin);
+            return res.json(data);
         } catch (e) {
             next(e);
         }

@@ -44,5 +44,9 @@ router.post(
     "/buy",
     productController.buyProduct
 );
+router.post(
+  "/buy-product-client-secret",
+  productController.buyProductClientSecret
+);
 
 export default router;

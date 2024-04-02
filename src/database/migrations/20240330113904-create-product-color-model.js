@@ -33,8 +33,8 @@ module.exports = {
         table: 'products',
         field: 'id'
       },
-      onUpdate: 'NO ACTION',
-      onDelete: 'NO ACTION'
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE'
     });
     await queryInterface.addConstraint("product_color", {
       fields: ['color_id'],
@@ -44,8 +44,8 @@ module.exports = {
         table: 'colors',
         field: 'id'
       },
-      onUpdate: 'NO ACTION',
-      onDelete: 'NO ACTION'
+      onUpdate: 'CASCADE',
+      onDelete: 'CASCADE'
     });
   },
 

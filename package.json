@@ -24,6 +24,7 @@
     "nodemon": "^3.1.0",
     "pg": "^8.11.3",
     "sequelize": "^6.37.1",
+    "stripe": "^14.23.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@types/node": "^20.11.24",
     "@types/nodemailer": "^6.4.14",
     "@types/pg": "^8.11.2",
+    "@types/stripe": "^8.0.417",
     "@types/uuid": "^9.0.8",
     "sequelize-cli": "^6.6.2",
     "typescript": "^5.3.3"

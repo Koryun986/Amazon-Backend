@@ -1,16 +1,17 @@
+import {Op} from "@sequelize/core";
 import sequelize from "../database";
+import stripeService from "./stripe-service";
 import {Product} from "../database/models/product";
 import {Category} from "../database/models/category";
 import {Color} from "../database/models/color";
 import {Size} from "../database/models/size";
 import {User} from "../database/models/user";
 import {ProductImage} from "../database/models/product-images";
-import type {ProductDto} from "../dtos/product-dto";
-import type {UserDto} from "../dtos/user-dto";
 import {extractRelativePath} from "../utils/file-helpers";
 import {ProductParams} from "../types/product-params-type";
-import {Op} from "@sequelize/core";
 import {ApiError} from "../exceptions/api-error";
+import type {ProductDto} from "../dtos/product-dto";
+import type {UserDto} from "../dtos/user-dto";
 
 class ProductService {
     async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
@@ -75,7 +76,6 @@ class ProductService {
         }
         if (params.category) {
             const allChildIds = await this.getAllChildCategoryIdsById(+params.category);
-            console.log("child ids", allChildIds)
             query.category_id = {
                 [Op.in]: [+params.category, ...allChildIds]
             };
@@ -144,6 +144,7 @@ class ProductService {
                     await imageEntity.save();
                 }
             }
+            await stripeService.createProduct(productEntity.id, productDto.price, productDto.is_published);
             await productEntity.save();
             await transaction.commit();
             return {
@@ -161,7 +162,6 @@ class ProductService {
                 }
             }
         } catch (e) {
-            console.log("error",e)
             await transaction.rollback();
             throw new Error(e);
         }
@@ -195,13 +195,18 @@ class ProductService {
             if (!categoryEntity) {
                 throw ApiError.BadRequest("Category with this id doesn't exist");
             }
+            if (product.price !== productEntity.price) {
+                await stripeService.updateProduct(product.id, product.price, product.is_published);
+            } else if (product.is_published !== productEntity.is_published) {
+                await stripeService.changeProductStatus(product.id, product.is_published);
+            }
             productEntity.name = product.name;
             productEntity.description = product.description;
             productEntity.price = product.price;
             productEntity.is_published = product.is_published;
             productEntity.category_id = categoryEntity.id;
-            productEntity.setColors(colorEntities);
-            productEntity.setSizes(sizeEntities);
+            await productEntity.setColors(colorEntities);
+            await productEntity.setSizes(sizeEntities);
             await productEntity.save();
             await transaction.commit();
             return productEntity;
@@ -223,17 +228,27 @@ class ProductService {
         if (productEntity.owner_id !== userEntity.id) {
             throw new Error("Product doesn't belong you");
         }
+        await stripeService.deleteProduct(id);
         await productEntity.destroy();
     }
 
-    async buyProduct(id: number, times: number) {
+    async buyProduct(id: number, count: number, requestUrl: string) {
         const productEntity = await Product.findByPk(id);
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        productEntity.time_bought += times;
-        productEntity.total_earnings += times*productEntity.price;
-        await productEntity.save();
+        const stripeSession = await stripeService.buyProduct(id, count, requestUrl);
+        return {clientSecret: stripeSession.client_secret};
+    }
+
+    async buyProductClientSecret(id: number, count: number, requestUrl: string) {
+        const productEntity = await Product.findByPk(id);
+        if (!productEntity) {
+            throw new Error("Product with this id doesn't exist");
+        }
+        const stripeSession = await stripeService.buyProduct(id, count, requestUrl);
+        console.log(stripeSession, "stripe session")
+        return {clientSecret: stripeSession.client_secret};
     }
 
     private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {
