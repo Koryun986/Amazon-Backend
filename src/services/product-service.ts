@@ -39,6 +39,11 @@ class ProductService {
     }
 
     async getProductsByParams(params: ProductParams) {
+        const {query, includeWhereParams} = await this.getParams(params);
+        return await this.getProducts(query, includeWhereParams, params);
+    }
+
+    async getParams(params: ProductParams) {
         const query: any = {};
         const includeWhereParams: any = {};
         if (params.text) {
@@ -81,7 +86,10 @@ class ProductService {
                 [Op.in]: [+params.category, ...allChildIds]
             };
         }
-        return await this.getProducts(query, includeWhereParams, params);
+        return {
+            query,
+            includeWhereParams
+        }
     }
 
     async getProductById(id: number) {
@@ -105,16 +113,30 @@ class ProductService {
         return productEntities;
     }
 
-    async getProductsByIds(ids: number[]) {
+    async getProductsByIds(ids: number[], params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}) {
         const products = await Product.findAll({where: {
+                ...params,
                 id: {
                     [Op.in]: ids
                 }
             },
-            include: {
-                all: true
-            }
-        });
+            include: [
+                {
+                    model: Color,
+                    where: includeWhereParams?.color || {},
+                },
+                {
+                    model: Size,
+                    where: includeWhereParams?.size || {},
+                },
+                {
+                    association: "images"
+                },
+                {
+                    association: "main_image"
+                },
+                Category, User
+            ]});
         return products;
     }
 

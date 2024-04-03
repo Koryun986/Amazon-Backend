@@ -38,7 +38,14 @@ class ProductController {
 
     async getProductsByIds(req: Request, res: Response, next: NextFunction) {
         try {
-            const products = await productService.getProductsByIds(req.body.ids);
+            const params = req.query;
+            let products;
+            if (Object.keys(params).length) {
+                const {query, includeWhereParams} = await productService.getParams(params);
+                products = await productService.getProductsByIds(req.body.ids, query, includeWhereParams);
+            } else {
+                products = await productService.getProductsByIds(req.body.ids);
+            }
             return res.json(products);
         } catch (e) {
             next(e);
