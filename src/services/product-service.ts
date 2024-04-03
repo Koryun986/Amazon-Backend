@@ -12,6 +12,7 @@ import {ProductParams} from "../types/product-params-type";
 import {ApiError} from "../exceptions/api-error";
 import type {ProductDto} from "../dtos/product-dto";
 import type {UserDto} from "../dtos/user-dto";
+import {CartItem} from "../database/models/cart-item";
 
 class ProductService {
     async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
@@ -232,23 +233,34 @@ class ProductService {
         await productEntity.destroy();
     }
 
-    async buyProduct(id: number, count: number, requestUrl: string) {
+    async buyProduct(id: number, count: number) {
         const productEntity = await Product.findByPk(id);
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const stripeSession = await stripeService.buyProduct(id, count, requestUrl);
-        return {clientSecret: stripeSession.client_secret};
+        productEntity.time_bought++;
+        productEntity.total_earnings += count * productEntity.price;
+        await productEntity.save();
+        const cartItem = await CartItem.findOne({where: {product_id: id}});
+        if (cartItem) {
+            await cartItem.destroy();
+        }
     }
 
-    async buyProductClientSecret(id: number, count: number, requestUrl: string) {
-        const productEntity = await Product.findByPk(id);
+    async buyProductClientSecret(id: number, count: number) {
+        const productEntity = await Product.findByPk(id, {
+            include: {all: true},
+        });
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const stripeSession = await stripeService.buyProduct(id, count, requestUrl);
+        const stripeSession = await stripeService.buyProduct(productEntity.price * count);
         console.log(stripeSession, "stripe session")
-        return {clientSecret: stripeSession.client_secret};
+        return {
+            product: productEntity,
+            amount: stripeSession.amount,
+            clientSecret: stripeSession.client_secret
+        };
     }
 
     private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {

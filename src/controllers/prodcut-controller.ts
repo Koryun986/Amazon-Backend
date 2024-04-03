@@ -94,8 +94,8 @@ class ProductController {
 
     async buyProduct(req: Request, res: Response, next: NextFunction) {
         try {
-            const data = await productService.buyProduct(req.body.id, req.body.count, req.headers.origin);
-            return res.json(data);
+            await productService.buyProduct(req.body.id, req.body.count);
+            return res.json();
         } catch (e) {
             next(e);
         }
@@ -103,7 +103,7 @@ class ProductController {
 
     async buyProductClientSecret(req: Request, res: Response, next: NextFunction) {
         try {
-            const data = await productService.buyProductClientSecret(req.body.id, req.body.count, req.headers.origin);
+            const data = await productService.buyProductClientSecret(req.body.id, req.body.count);
             return res.json(data);
         } catch (e) {
             next(e);

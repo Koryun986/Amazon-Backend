@@ -60,19 +60,13 @@ class StripeService {
     }
   }
 
-  async buyProduct(id: number, count: number, requestUrl: string) {
-    const product = await this.queryProductById(id);
-    return await this.stripe.checkout.sessions.create({
-      ui_mode: 'embedded',
-      line_items: [
-        {
-          price: product.default_price,
-          quantity: count,
-        }
-      ],
-      mode: "payment",
-      return_url:
-        `${requestUrl}/return?session_id={CHECKOUT_SESSION_ID}`,
+  async buyProduct(amount: number) {
+    return await this.stripe.paymentIntents.create({
+      amount: amount * 100,
+      currency: "usd",
+      automatic_payment_methods: {
+        enabled: true,
+      },
     });
   }
 
