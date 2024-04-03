@@ -14,7 +14,9 @@ class AddressService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        await this.changeDefaultAddressesToNormal(userEntity.id);
+        if (address.is_default_address) {
+            await this.changeDefaultAddressesToNormal(userEntity.id);
+        }
         const addressEntity = await Address.create({
             country: address.country,
             state: address.state,
