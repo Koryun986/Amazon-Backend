@@ -48,5 +48,9 @@ router.post(
   "/buy-product-client-secret",
   productController.buyProductClientSecret
 );
+router.post(
+  "/buy-all-cart-items-checkout",
+  productController.buyAllCartItemsCheckout
+);
 
 export default router;

@@ -116,6 +116,15 @@ class ProductController {
             next(e);
         }
     }
+
+    async buyAllCartItemsCheckout(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const data = await productService.buyAllCartItemsCheckout(req.user);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new ProductController();

@@ -285,6 +285,13 @@ class ProductService {
         };
     }
 
+    async buyAllCartItemsCheckout(userDto: UserDto) {
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw ApiError.UnauthorizedError();
+        }
+    }
+
     private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {
         const categoryEntity = await Category.findByPk(category);
         if (!categoryEntity) {
