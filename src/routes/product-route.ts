@@ -52,5 +52,8 @@ router.post(
   "/buy-all-cart-items-checkout",
   productController.buyAllCartItemsCheckout
 );
-
+router.post(
+  "/buy-cart",
+  productController.buyAllCartItems
+)
 export default router;

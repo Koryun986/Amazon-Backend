@@ -277,7 +277,6 @@ class ProductService {
             throw new Error("Product with this id doesn't exist");
         }
         const stripeSession = await stripeService.buyProduct(productEntity.price * count);
-        console.log(stripeSession, "stripe session")
         return {
             product: productEntity,
             amount: stripeSession.amount,
@@ -289,6 +288,56 @@ class ProductService {
         const userEntity = await User.findOne({where: {email: userDto.email}});
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
+        }
+        const cartItems = await CartItem.findAll({where: {user_id: userEntity.id}});
+        const products = await Product.findAll({where: {
+            id: {
+                [Op.in]: cartItems.map(item => item.product_id)
+            }
+        }, include: {all: true}});
+        const amount = products.reduce((acc, cur) => {
+            const cartItem = cartItems.find(item => item.product_id === cur.id);
+            if (!cartItem) {
+                throw new Error("Something went wrong");
+            }
+            return acc + cur.price * cartItem.count;
+        }, 0);
+        const stripeSession = await stripeService.buyProduct(amount);
+        return {
+            clientSecret: stripeSession.client_secret,
+            amount: stripeSession.amount,
+            products,
+            cartItems
+        }
+    }
+
+    async buyAllCartItems(userDto: UserDto) {
+        const transaction = await sequelize.startUnmanagedTransaction();
+        try {
+            const userEntity = await User.findOne({where: {email: userDto.email}});
+            if (!userEntity) {
+                throw ApiError.UnauthorizedError();
+            }
+            const cartItems = await CartItem.findAll({where: {user_id: userEntity.id}});
+            const products = await Product.findAll({where: {
+                id: {
+                    [Op.in]: cartItems.map(item => item.product_id)
+                }
+            }, include: {all: true}});
+            for(const product of products) {
+                const cartItem = cartItems.find(item => item.product_id === product.id);
+                if (!cartItem) {
+                    continue;
+                }
+                product.time_bought += cartItem.count;
+                product.total_earnings += product.price * cartItem.count;
+                await product.save();
+
+            }
+            await CartItem.destroy({where: {user_id: userEntity.id}})
+            await transaction.commit();
+        } catch (e) {
+            await transaction.rollback();
         }
     }
 
