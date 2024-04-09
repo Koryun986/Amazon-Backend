@@ -55,5 +55,9 @@ router.post(
 router.post(
   "/buy-cart",
   productController.buyAllCartItems
-)
+);
+router.get(
+  "/get-orders",
+  productController.getOrders
+);
 export default router;

@@ -97,6 +97,22 @@ class StripeService {
     });
   }
 
+  async getCustomersOrderedProducts(userDto: UserDto) {
+    const payments = await this.getUserPayments(userDto);
+    console.log(payments, "payments")
+    return payments.reduce((acc, cur) => {
+      if (cur.metadata)
+      return [...acc, ...JSON.parse(cur.metadata.products)]
+    }, [])
+  }
+
+  async getUserPayments(userDto: UserDto) {
+    const customer = await this.getCustomer(userDto);
+    return (await this.stripe.paymentIntents.search({
+      query: `customer:'${customer.id}'`,
+    })).data;
+  }
+
   private async queryProductById(id: number) {
     const products = await this.stripe.products.search({
       query: `name:${id}`

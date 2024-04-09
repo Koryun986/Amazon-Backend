@@ -357,6 +357,21 @@ class ProductService {
         }
     }
 
+    async getOrders(userDto: UserDto) {
+        const productInfos = await stripeService.getCustomersOrderedProducts(userDto);
+        const products = await Product.findAll({
+            where: {
+                id: {
+                    [Op.in]: productInfos.map(productInfo => productInfo.id),
+                }
+            }
+        });
+        return {
+            products,
+            info: productInfos
+        }
+    }
+
     private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {
         const categoryEntity = await Category.findByPk(category);
         if (!categoryEntity) {

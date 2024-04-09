@@ -137,6 +137,16 @@ class ProductController {
             next(e);
         }
     }
+
+    async getOrders(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const data = await productService.getOrders(req.user);
+            return res.json();
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new ProductController();
