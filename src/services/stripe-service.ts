@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import {STRIPE_SECRET_KEY} from "../config/envirenmentVariables";
+import {UserDto} from "../dtos/user-dto";
 
 class StripeService {
   private stripe;
@@ -60,13 +61,28 @@ class StripeService {
     }
   }
 
-  async buyProduct(amount: number) {
+  async getCustomer(userDto: UserDto) {
+    let customer = await this.stripe.customers.search({
+      query: `email:'${userDto.email}'`,
+    });
+    if (!customer?.data?.length) {
+      return await this.stripe.customers.create({
+        name: `${userDto.first_name} ${userDto.last_name}`,
+        email: userDto.email,
+      });
+    }
+    return customer.data[0];
+  }
+
+  async buyProduct(amount: number, userDto: UserDto) {
+    const customer = await this.getCustomer(userDto);
     return await this.stripe.paymentIntents.create({
       amount: amount * 100,
       currency: "usd",
       automatic_payment_methods: {
         enabled: true,
       },
+      customer: customer.id,
     });
   }
 
@@ -82,7 +98,6 @@ class StripeService {
     const products = await this.stripe.products.search({
       query: `name:${id}`
     });
-    console.log(products, "products");
     return products.data[0];
   }
 }

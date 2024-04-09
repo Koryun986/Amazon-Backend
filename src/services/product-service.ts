@@ -269,14 +269,14 @@ class ProductService {
         }
     }
 
-    async buyProductClientSecret(id: number, count: number) {
+    async buyProductClientSecret(id: number, count: number, userDto: UserDto) {
         const productEntity = await Product.findByPk(id, {
             include: {all: true},
         });
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const stripeSession = await stripeService.buyProduct(productEntity.price * count);
+        const stripeSession = await stripeService.buyProduct(productEntity.price * count, userDto);
         return {
             product: productEntity,
             amount: stripeSession.amount,
@@ -302,7 +302,7 @@ class ProductService {
             }
             return acc + cur.price * cartItem.count;
         }, 0);
-        const stripeSession = await stripeService.buyProduct(amount);
+        const stripeSession = await stripeService.buyProduct(amount, userDto);
         return {
             clientSecret: stripeSession.client_secret,
             amount: stripeSession.amount,
