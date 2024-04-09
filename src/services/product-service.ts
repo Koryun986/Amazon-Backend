@@ -276,7 +276,7 @@ class ProductService {
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const stripeSession = await stripeService.buyProduct(productEntity.price * count, userDto);
+        const stripeSession = await stripeService.buyProduct(productEntity.price * count, [{id, count}], userDto);
         return {
             product: productEntity,
             amount: stripeSession.amount,
@@ -289,12 +289,21 @@ class ProductService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        const cartItems = await CartItem.findAll({where: {user_id: userEntity.id}});
-        const products = await Product.findAll({where: {
-            id: {
-                [Op.in]: cartItems.map(item => item.product_id)
-            }
-        }, include: {all: true}});
+        const cartItems = await CartItem.findAll({
+            where: {
+                user_id: userEntity.id
+            },
+        });
+        const products = await Product.findAll({
+            where: {
+                id: {
+                    [Op.in]: cartItems.map(item => item.product_id)
+                }
+            },
+            include: {
+              all: true
+            },
+        });
         const amount = products.reduce((acc, cur) => {
             const cartItem = cartItems.find(item => item.product_id === cur.id);
             if (!cartItem) {
@@ -302,7 +311,14 @@ class ProductService {
             }
             return acc + cur.price * cartItem.count;
         }, 0);
-        const stripeSession = await stripeService.buyProduct(amount, userDto);
+        const productInfos = products.map(product => {
+            const cartItem = cartItems.find(item => item.product_id === product.id);
+            if (!cartItem) {
+                return {...product, count: 0}
+            }
+            return {id:product.id, count: cartItem.count};
+        });
+        const stripeSession = await stripeService.buyProduct(amount, productInfos ,userDto);
         return {
             clientSecret: stripeSession.client_secret,
             amount: stripeSession.amount,

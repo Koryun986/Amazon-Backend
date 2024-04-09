@@ -8,6 +8,7 @@ import {
 } from "@sequelize/core";
 import { Table, Attribute, PrimaryKey, AutoIncrement, NotNull, Default, BelongsTo } from "@sequelize/core/decorators-legacy";
 import {User} from "./user";
+import {Product} from "./product";
 
 @Table({tableName: "cart_items", createdAt: false, updatedAt: false})
 export class CartItem extends Model<InferAttributes<CartItem>, InferCreationAttributes<CartItem>> {
@@ -31,4 +32,7 @@ export class CartItem extends Model<InferAttributes<CartItem>, InferCreationAttr
 
     @BelongsTo(() => User, "user_id")
     declare user?: NonAttribute<User>
+
+    @BelongsTo(() => Product, "product_id")
+    declare product?: NonAttribute<Product>
 }

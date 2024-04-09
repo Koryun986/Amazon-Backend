@@ -74,7 +74,7 @@ class StripeService {
     return customer.data[0];
   }
 
-  async buyProduct(amount: number, userDto: UserDto) {
+  async buyProduct(amount: number, productsInfo: {id: number, count: number}[], userDto: UserDto) {
     const customer = await this.getCustomer(userDto);
     return await this.stripe.paymentIntents.create({
       amount: amount * 100,
@@ -83,6 +83,9 @@ class StripeService {
         enabled: true,
       },
       customer: customer.id,
+      metadata: {
+        products: JSON.stringify(productsInfo),
+      }
     });
   }
 
