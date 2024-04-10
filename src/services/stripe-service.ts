@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import {STRIPE_SECRET_KEY} from "../config/envirenmentVariables";
+import {STRIPE_SECRET_KEY, STRIPE_WEBHOOK_ENDPOINT_SECRET} from "../config/envirenmentVariables";
 import {UserDto} from "../dtos/user-dto";
 
 class StripeService {
@@ -113,6 +113,10 @@ class StripeService {
     return (await this.stripe.paymentIntents.search({
       query: `customer:'${customer.id}'`,
     })).data;
+  }
+
+  constructEvent(data: any, sig: string | string[]) {
+    return this.stripe.webhooks.constructEvent(data, sig, STRIPE_WEBHOOK_ENDPOINT_SECRET);
   }
 
   private async queryProductById(id: number) {

@@ -22,3 +22,4 @@ export const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
 export const COOKIES_REFRESH_TOKEN = "refresh_token";
 
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+export const STRIPE_WEBHOOK_ENDPOINT_SECRET = process.env.STRIPE_WEBHOOK_ENDPOINT_SECRET;

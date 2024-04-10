@@ -255,18 +255,8 @@ class ProductService {
         await productEntity.destroy();
     }
 
-    async buyProduct(id: number, count: number) {
-        const productEntity = await Product.findByPk(id);
-        if (!productEntity) {
-            throw new Error("Product with this id doesn't exist");
-        }
-        productEntity.time_bought++;
-        productEntity.total_earnings += count * productEntity.price;
-        await productEntity.save();
-        const cartItem = await CartItem.findOne({where: {product_id: id}});
-        if (cartItem) {
-            await cartItem.destroy();
-        }
+    async buyProduct(id: number) {
+        await CartItem.destroy({where: {product_id: id}});
     }
 
     async buyProductClientSecret(id: number, count: number, userDto: UserDto) {
@@ -333,22 +323,6 @@ class ProductService {
             const userEntity = await User.findOne({where: {email: userDto.email}});
             if (!userEntity) {
                 throw ApiError.UnauthorizedError();
-            }
-            const cartItems = await CartItem.findAll({where: {user_id: userEntity.id}});
-            const products = await Product.findAll({where: {
-                id: {
-                    [Op.in]: cartItems.map(item => item.product_id)
-                }
-            }, include: {all: true}});
-            for(const product of products) {
-                const cartItem = cartItems.find(item => item.product_id === product.id);
-                if (!cartItem) {
-                    continue;
-                }
-                product.time_bought += cartItem.count;
-                product.total_earnings += product.price * cartItem.count;
-                await product.save();
-
             }
             await CartItem.destroy({where: {user_id: userEntity.id}})
             await transaction.commit();

@@ -11,6 +11,7 @@ import sizeRouter from "./routes/size-route";
 import colorRouter from "./routes/color-route";
 import favoriteProductsRouter from "./routes/favorite-products-route";
 import cartItemsRouter from "./routes/cart-item-router";
+import webhookRouter from "./routes/webhook-route";
 import errorMiddleware from "./middlewares/error-middleware";
 
 const app: Express = express();
@@ -20,6 +21,9 @@ app.use(cors({
     credentials: true,
 }));
 app.use(cookieParser());
+
+app.use("/webhook/", webhookRouter);
+
 app.use(express.json());
 
 app.use("/public/", express.static("public"));
