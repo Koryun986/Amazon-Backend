@@ -102,7 +102,7 @@ class ProductController {
     async buyProductClientSecret(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
-            const data = await productService.buyProductClientSecret(req.body.id, req.body.count, req.user);
+            const data = await productService.buyProductClientSecret(req.body.id, req.body.count, req.user, req.body?.payment_id);
             return res.json(data);
         } catch (e) {
             next(e);

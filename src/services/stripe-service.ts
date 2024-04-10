@@ -103,7 +103,12 @@ class StripeService {
       if (!cur.metadata?.products) {
         return acc;
       }
-      const products = JSON.parse(cur.metadata.products).map(product => ({...product, status: cur.status, date: cur.created}));
+      const products = JSON.parse(cur.metadata.products).map(product => ({
+        ...product,
+        status: cur.status,
+        date: cur.created,
+        payment_id: cur.id,
+      }));
       return [...acc, ...products];
     }, [])
   }
@@ -111,8 +116,35 @@ class StripeService {
   async getUserPayments(userDto: UserDto) {
     const customer = await this.getCustomer(userDto);
     return (await this.stripe.paymentIntents.search({
-      query: `customer:'${customer.id}'`,
+      query: `customer:'${customer.id}' AND -status:'requires_payment_method'`,
     })).data;
+  }
+
+  async removeProductFromPayment(paymentId: string, productId: number) {
+    const payment = await this.stripe.paymentIntents.retrieve(paymentId);
+    const products = payment.metadata?.products && JSON.parse(payment.metadata.products);
+    if (!products) {
+      return
+    }
+    const newProducts = products.filter(product => product.id !== productId);
+    if (newProducts.length) {
+      await this.stripe.paymentIntents.update(
+        paymentId,
+        {
+          metadata: {
+            products: JSON.stringify(newProducts),
+          },
+        }
+      );
+      return;
+    }
+    await this.stripe.paymentIntents.update(
+      paymentId,
+      {
+        metadata: {},
+      }
+    );
+    await this.stripe.paymentIntents.retrieve(paymentId);
   }
 
   constructEvent(data: any, sig: string | string[]) {

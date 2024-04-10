@@ -255,7 +255,10 @@ class ProductService {
         await productEntity.destroy();
     }
 
-    async buyProductClientSecret(id: number, count: number, userDto: UserDto) {
+    async buyProductClientSecret(id: number, count: number, userDto: UserDto, payment_id?: string) {
+        if (payment_id) {
+            await stripeService.removeProductFromPayment(payment_id, id);
+        }
         const productEntity = await Product.findByPk(id, {
             include: {all: true},
         });
