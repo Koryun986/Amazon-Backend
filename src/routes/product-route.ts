@@ -41,20 +41,12 @@ router.delete(
     productController.deleteProduct
 );
 router.post(
-    "/buy",
-    productController.buyProduct
-);
-router.post(
   "/buy-product-client-secret",
   productController.buyProductClientSecret
 );
 router.post(
   "/buy-all-cart-items-checkout",
   productController.buyAllCartItemsCheckout
-);
-router.post(
-  "/buy-cart",
-  productController.buyAllCartItems
 );
 router.get(
   "/get-orders",

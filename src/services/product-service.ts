@@ -255,10 +255,6 @@ class ProductService {
         await productEntity.destroy();
     }
 
-    async buyProduct(id: number) {
-        await CartItem.destroy({where: {product_id: id}});
-    }
-
     async buyProductClientSecret(id: number, count: number, userDto: UserDto) {
         const productEntity = await Product.findByPk(id, {
             include: {all: true},
@@ -314,20 +310,6 @@ class ProductService {
             amount: stripeSession.amount,
             products,
             cartItems
-        }
-    }
-
-    async buyAllCartItems(userDto: UserDto) {
-        const transaction = await sequelize.startUnmanagedTransaction();
-        try {
-            const userEntity = await User.findOne({where: {email: userDto.email}});
-            if (!userEntity) {
-                throw ApiError.UnauthorizedError();
-            }
-            await CartItem.destroy({where: {user_id: userEntity.id}})
-            await transaction.commit();
-        } catch (e) {
-            await transaction.rollback();
         }
     }
 
