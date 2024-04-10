@@ -99,10 +99,12 @@ class StripeService {
 
   async getCustomersOrderedProducts(userDto: UserDto) {
     const payments = await this.getUserPayments(userDto);
-    console.log(payments, "payments")
     return payments.reduce((acc, cur) => {
-      if (cur.metadata)
-      return [...acc, ...JSON.parse(cur.metadata.products)]
+      if (!cur.metadata?.products) {
+        return acc;
+      }
+      const products = JSON.parse(cur.metadata.products).map(product => ({...product, status: cur.status, date: cur.created}));
+      return [...acc, ...products];
     }, [])
   }
 

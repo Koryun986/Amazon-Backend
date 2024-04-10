@@ -142,7 +142,7 @@ class ProductController {
         try {
             //@ts-ignore
             const data = await productService.getOrders(req.user);
-            return res.json();
+            return res.json(data);
         } catch (e) {
             next(e);
         }

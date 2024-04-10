@@ -364,6 +364,9 @@ class ProductService {
                 id: {
                     [Op.in]: productInfos.map(productInfo => productInfo.id),
                 }
+            },
+            include: {
+                all: true,
             }
         });
         return {
