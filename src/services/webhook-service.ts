@@ -1,5 +1,7 @@
 import stripeService from "./stripe-service";
 import {Product} from "../database/models/product";
+import sequelize from "../database/index";
+import {CartItem} from "../database/models/cart-item";
 
 class WebhookService {
   async webhook(data: any, sig: string | string[]) {
@@ -20,14 +22,21 @@ class WebhookService {
     if (!products) {
       return;
     }
-    for(const product of products) {
-      const productEntity = await Product.findByPk(product.id);
-      if (!productEntity) {
-        continue;
+    const transaction = await sequelize.startUnmanagedTransaction();
+    try {
+      for(const product of products) {
+        const productEntity = await Product.findByPk(product.id);
+        if (!productEntity) {
+          continue;
+        }
+        productEntity.time_bought += product.count;
+        productEntity.total_earnings += productEntity.price * product.count;
+        await productEntity.save();
+        await CartItem.destroy({where: {product_id: product.id}});
       }
-      productEntity.time_bought += product.count;
-      productEntity.total_earnings += productEntity.price * product.count;
-      await productEntity.save();
+      await transaction.commit();
+    } catch (e) {
+      await transaction.rollback();
     }
   }
 }
