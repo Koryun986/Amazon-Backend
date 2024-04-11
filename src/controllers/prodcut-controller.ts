@@ -119,10 +119,10 @@ class ProductController {
         }
     }
 
-    async getOrders(req: Request, res: Response, next: NextFunction) {
+    async getPayments(req: Request, res: Response, next: NextFunction) {
         try {
             //@ts-ignore
-            const data = await productService.getOrders(req.user);
+            const data = await productService.getPayments(req.user);
             return res.json(data);
         } catch (e) {
             next(e);

@@ -53,7 +53,7 @@ router.post(
   productController.tryPaymentAgain
 );
 router.get(
-  "/get-orders",
-  productController.getOrders
+  "/get-payments",
+  productController.getPayments
 );
 export default router;
