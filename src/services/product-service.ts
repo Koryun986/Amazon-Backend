@@ -13,6 +13,7 @@ import {ApiError} from "../exceptions/api-error";
 import type {ProductDto} from "../dtos/product-dto";
 import type {UserDto} from "../dtos/user-dto";
 import {CartItem} from "../database/models/cart-item";
+import {StripeCustomer} from "../database/models/stripe-customer";
 
 class ProductService {
     async getProducts(params: any = {}, includeWhereParams: {color: any, size: any} = {color: {}, size: {}}, pagination?: {limit?: string, page?: string}) {
@@ -335,7 +336,12 @@ class ProductService {
     }
 
     async getOrders(userDto: UserDto) {
-        const productInfos = await stripeService.getCustomersOrderedProducts(userDto);
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw ApiError.UnauthorizedError();
+        }
+        const stripeCustomerEntity = await StripeCustomer.findOne({where: {user_id: userEntity.id}});
+        const productInfos = await stripeService.getCustomersOrderedProducts(stripeCustomerEntity.stripe_customer_id);
         const products = await Product.findAll({
             where: {
                 id: {
