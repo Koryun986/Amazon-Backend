@@ -116,7 +116,7 @@ class StripeService {
   async getUserPayments(userDto: UserDto) {
     const customer = await this.getCustomer(userDto);
     return (await this.stripe.paymentIntents.search({
-      query: `customer:'${customer.id}' AND -status:'requires_payment_method'`,
+      query: `customer:'${customer.id}'`,
     })).data;
   }
 
@@ -149,6 +149,10 @@ class StripeService {
 
   constructEvent(data: any, sig: string | string[]) {
     return this.stripe.webhooks.constructEvent(data, sig, STRIPE_WEBHOOK_ENDPOINT_SECRET);
+  }
+
+  async getPaymentById(id: string) {
+    return await this.stripe.paymentIntents.retrieve(id);
   }
 
   private async queryProductById(id: number) {

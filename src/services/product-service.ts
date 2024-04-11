@@ -334,6 +334,22 @@ class ProductService {
         }
     }
 
+    async tryPaymentAgain(paymentId: string) {
+        const paymentIntent = await stripeService.getPaymentById(paymentId);
+        const products = JSON.parse(paymentIntent.metadata.products);
+        const productEntities = await Product.findAll({where: {
+            id: {
+                [Op.in]: products.map(product => product.id)
+            }
+        }, include: {all: true}});
+        return {
+            clientSecret: paymentIntent.client_secret,
+            amount: paymentIntent.amount,
+            products: productEntities,
+            cartItems: products.map(product => ({...product, product_id: product.id}))
+        };
+    }
+
     private async getEntitiesByNames({colors, sizes, category}: {colors: string[], sizes: string[], category: number}) {
         const categoryEntity = await Category.findByPk(category);
         if (!categoryEntity) {

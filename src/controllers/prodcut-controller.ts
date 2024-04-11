@@ -128,6 +128,15 @@ class ProductController {
             next(e);
         }
     }
+
+    async tryPaymentAgain(req: Request, res: Response, next: NextFunction) {
+        try {
+            const data = await productService.tryPaymentAgain(req.body.payment_id);
+            return res.json(data);
+        } catch (e) {
+            next(e);
+        }
+    }
 }
 
 export default new ProductController();

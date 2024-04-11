@@ -48,6 +48,10 @@ router.post(
   "/buy-all-cart-items-checkout",
   productController.buyAllCartItemsCheckout
 );
+router.post(
+  "/try-payment-again",
+  productController.tryPaymentAgain
+);
 router.get(
   "/get-orders",
   productController.getOrders
