@@ -97,7 +97,7 @@ class StripeService {
     });
   }
 
-  async getCustomersOrderedProducts(userDto: UserDto) {
+  async getCustomerPayedProducts(userDto: UserDto) {
     const payments = await this.getUserPayments(userDto);
     return payments.reduce((acc, cur) => {
       if (!cur.metadata?.products) {
@@ -117,6 +117,29 @@ class StripeService {
     const customer = await this.getCustomer(userDto);
     return (await this.stripe.paymentIntents.search({
       query: `customer:'${customer.id}'`,
+    })).data;
+  }
+
+  async getCustomersOrderedProducts(userDto: UserDto) {
+    const payments = await this.getUserCompletedPayments(userDto);
+    return payments.reduce((acc, cur) => {
+      if (!cur.metadata?.products) {
+        return acc;
+      }
+      const products = JSON.parse(cur.metadata.products).map(product => ({
+        ...product,
+        status: cur.status,
+        date: cur.created,
+        payment_id: cur.id,
+      }));
+      return [...acc, ...products];
+    }, [])
+  }
+
+  async getUserCompletedPayments(userDto: UserDto) {
+    const customer = await this.getCustomer(userDto);
+    return (await this.stripe.paymentIntents.search({
+      query: `customer:'${customer.id}' AND status:'succeeded'`,
     })).data;
   }
 

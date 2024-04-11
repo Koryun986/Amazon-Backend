@@ -129,6 +129,16 @@ class ProductController {
         }
     }
 
+    async getOrders(req: Request, res: Response, next: NextFunction) {
+        try {
+            //@ts-ignore
+            const data = await productService.getOrders(req.user);
+            return res.json(data);
+        } catch (e) {
+            next(e);
+        }
+    }
+
     async tryPaymentAgain(req: Request, res: Response, next: NextFunction) {
         try {
             const data = await productService.tryPaymentAgain(req.body.payment_id);

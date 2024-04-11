@@ -56,4 +56,8 @@ router.get(
   "/get-payments",
   productController.getPayments
 );
+router.get(
+  "/get-orders",
+  productController.getOrders
+);
 export default router;

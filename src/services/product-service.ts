@@ -317,6 +317,24 @@ class ProductService {
     }
 
     async getPayments(userDto: UserDto) {
+        const productInfos = await stripeService.getCustomerPayedProducts(userDto);
+        const products = await Product.findAll({
+            where: {
+                id: {
+                    [Op.in]: productInfos.map(productInfo => productInfo.id),
+                }
+            },
+            include: {
+                all: true,
+            }
+        });
+        return {
+            products,
+            info: productInfos
+        }
+    }
+
+    async getOrders(userDto: UserDto) {
         const productInfos = await stripeService.getCustomersOrderedProducts(userDto);
         const products = await Product.findAll({
             where: {
