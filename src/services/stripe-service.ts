@@ -66,12 +66,16 @@ class StripeService {
       query: `email:'${userDto.email}'`,
     });
     if (!customer?.data?.length) {
-      return await this.stripe.customers.create({
-        name: `${userDto.first_name} ${userDto.last_name}`,
-        email: userDto.email,
-      });
+      return await this.createCustomer(userDto);
     }
     return customer.data[0];
+  }
+
+  async createCustomer(userDto: UserDto) {
+    return await this.stripe.customers.create({
+      name: `${userDto.first_name} ${userDto.last_name}`,
+      email: userDto.email,
+    });
   }
 
   async buyProduct(amount: number, productsInfo: {id: number, count: number}[], userDto: UserDto) {

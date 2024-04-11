@@ -6,12 +6,14 @@ import { UserActivationLink } from "../database/models/user-activation-link";
 import mailService from "./mail-service";
 import { API_URL } from "../config/envirenmentVariables";
 import tokenService from "./token-service";
+import stripeService from "./stripe-service";
 import { Token } from "../database/models/token";
 import { Admin } from "../database/models/admin";
 import type { ChangePasswordType, LoginUserType, UserType } from "../types/auth-types";
 import type { UserDto } from "../dtos/user-dto";
 import {ApiError} from "../exceptions/api-error";
 import {Op} from "@sequelize/core";
+import {StripeCustomer} from "../database/models/stripe-customer";
 
 class AuthService {
     async createUser(user: UserType) {
@@ -25,7 +27,7 @@ class AuthService {
             const userEntity = await User.create({...user, password: hashedPassword, is_activated: false, });
             await userEntity.save();
             const activationLink = v4();
-            
+
             const userActivationLinkEntity = await UserActivationLink.create({activation_link: activationLink, user_id: userEntity.id})
             await userActivationLinkEntity.save();
             await mailService.sendActivationMail(user.email, `${API_URL}/auth/activate/${userActivationLinkEntity.activation_link}`);
@@ -36,13 +38,17 @@ class AuthService {
             const tokenEntity = await Token.create({refresh_token: refreshToken, user_id: userEntity.id});
             await tokenEntity.save();
 
+            const stripeCustomer = await stripeService.createCustomer(userDto);
+            const stripeCustomerEntity = await StripeCustomer.create({stripe_customer_id: stripeCustomer.id, user_id: userEntity.id});
+            await stripeCustomerEntity.save();
+
             await transaction.commit();
             return {
                 ...userDto,
                 access_token: accessToken,
                 refresh_token: refreshToken,
             };
-        } catch (e) {            
+        } catch (e) {
             await transaction.rollback();
             throw new Error(e);
         }
@@ -77,7 +83,7 @@ class AuthService {
         if (!userEntity) {
             throw ApiError.UnauthorizedError();
         }
-        
+
         const isPasswordsEqual = await bcrypt.compare(changePasswordData.password, userEntity.password);
         if (!isPasswordsEqual) {
             throw new Error("Current password is wrong");
