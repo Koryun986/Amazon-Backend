@@ -11,6 +11,16 @@ class SubscriptionController {
       next(e);
     }
   }
+
+  async getSubscriptionsOfProduct(req: Request, res: Response, next: NextFunction) {
+    try {
+      //@ts-ignore
+      const data = await subscriptionService.getSubscriptionsOfProduct(req.user);
+      return res.json(data);
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default new SubscriptionController();

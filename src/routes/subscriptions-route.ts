@@ -10,5 +10,9 @@ router.post(
   "/product",
   subscriptionController.subscribeProduct
 );
+router.get(
+  "/get-products",
+  subscriptionController.getSubscriptionsOfProduct
+);
 
 export default router;

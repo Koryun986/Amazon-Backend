@@ -199,11 +199,16 @@ class StripeService {
     });
   }
 
+  async getCustomersSubscriptions(customerId: string) {
+    return (await this.stripe.subscriptions.search({
+      query: `metadata[\'customer\']:'${customerId}' AND status:'active'`,
+    })).data;
+  }
+
   private async checkIsProductsSubscriptionExist(customerId: string, productId: number) {
     const subscriptions = await this.stripe.subscriptions.search({
       query: `metadata[\'customer\']:'${customerId}' AND metadata[\'product\']:'${productId}' AND status:'active'`,
     });
-    console.log(subscriptions, "subscriptions")
     return !!subscriptions.data.length;
   }
 
@@ -228,7 +233,6 @@ class StripeService {
     const products = await this.stripe.products.search({
       query: `name:${id}`
     });
-    console.log(products, "products")
     return products.data[0];
   }
 }
