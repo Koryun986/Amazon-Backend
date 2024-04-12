@@ -21,6 +21,16 @@ class SubscriptionController {
       next(e);
     }
   }
+
+  async cancelSubscription(req: Request, res: Response, next: NextFunction) {
+    try {
+      //@ts-ignore
+      await subscriptionService.cancelSubscription(req.params.product_id, req.user);
+      return res.json();
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default new SubscriptionController();

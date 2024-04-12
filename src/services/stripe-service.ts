@@ -205,6 +205,19 @@ class StripeService {
     })).data;
   }
 
+  async cancelSubscription(customerId: string, productId: number) {
+    const subscription = await this.getSubscriptionByCustomerAndProductId(customerId, productId);
+    await this.stripe.subscriptions.cancel(
+      subscription.id,
+    );
+  }
+
+  async getSubscriptionByCustomerAndProductId(customerId: string, productId: number) {
+    return (await this.stripe.subscriptions.search({
+      query: `metadata[\'customer\']:'${customerId}' AND metadata[\'product\']:'${productId}' AND status:'active'`,
+    })).data[0];
+  }
+
   private async checkIsProductsSubscriptionExist(customerId: string, productId: number) {
     const subscriptions = await this.stripe.subscriptions.search({
       query: `metadata[\'customer\']:'${customerId}' AND metadata[\'product\']:'${productId}' AND status:'active'`,

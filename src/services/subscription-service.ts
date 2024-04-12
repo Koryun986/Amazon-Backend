@@ -42,6 +42,15 @@ class SubscriptionService {
       products,
     }
   }
+
+  async cancelSubscription(productId: number, userDto: UserDto) {
+    const userEntity = await User.findOne({where: {email: userDto.email}});
+    if (!userEntity) {
+      throw ApiError.UnauthorizedError();
+    }
+    const stripeCustomerEntity = await StripeCustomer.findOne({where: {user_id: userEntity.id}});
+    await stripeService.cancelSubscription(stripeCustomerEntity.stripe_customer_id, productId);
+  }
 }
 
 export default new SubscriptionService();

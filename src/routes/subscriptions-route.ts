@@ -14,5 +14,9 @@ router.get(
   "/get-products",
   subscriptionController.getSubscriptionsOfProduct
 );
+router.delete(
+  "/cancel/:product_id",
+  subscriptionController.cancelSubscription
+)
 
 export default router;
