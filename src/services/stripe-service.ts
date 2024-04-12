@@ -177,10 +177,58 @@ class StripeService {
     return await this.stripe.paymentIntents.retrieve(id);
   }
 
+  async createProductSubscription(productId: number, customerId: string, productPrice: number) {
+    const isSubscriptionExist = await this.checkIsProductsSubscriptionExist(customerId, productId);
+    if (isSubscriptionExist) {
+      throw new Error("You already have subscription on this product");
+    }
+    const product = await this.queryProductById(productId);
+    const price = await this.getProductRecurringPrice(product.id, productPrice);
+    return await this.stripe.subscriptions.create({
+      customer: customerId,
+      items: [{
+        price: price.id,
+      }],
+      metadata: {
+        product: productId,
+        customer: customerId,
+      },
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+    });
+  }
+
+  private async checkIsProductsSubscriptionExist(customerId: string, productId: number) {
+    const subscriptions = await this.stripe.subscriptions.search({
+      query: `metadata[\'customer\']:'${customerId}' AND metadata[\'product\']:'${productId}' AND status:'active'`,
+    });
+    console.log(subscriptions, "subscriptions")
+    return !!subscriptions.data.length;
+  }
+
+  private async getProductRecurringPrice(productId: string, productPrice: number) {
+    const price = await this.stripe.prices.search({
+      query: `product:"${productId}" AND type:"recurring"`,
+    });
+    if (price.data.length) {
+      return price.data[0];
+    }
+    return await this.stripe.prices.create({
+      currency: 'usd',
+      unit_amount: productPrice * 100,
+      recurring: {
+        interval: 'month',
+      },
+      product: productId
+    });
+  }
+
   private async queryProductById(id: number) {
     const products = await this.stripe.products.search({
       query: `name:${id}`
     });
+    console.log(products, "products")
     return products.data[0];
   }
 }

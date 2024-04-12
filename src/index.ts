@@ -12,6 +12,7 @@ import colorRouter from "./routes/color-route";
 import favoriteProductsRouter from "./routes/favorite-products-route";
 import cartItemsRouter from "./routes/cart-item-router";
 import webhookRouter from "./routes/webhook-route";
+import subscriptionRouter from "./routes/subscriptions-route";
 import errorMiddleware from "./middlewares/error-middleware";
 
 const app: Express = express();
@@ -35,6 +36,7 @@ app.use("/sizes/", sizeRouter);
 app.use("/colors/", colorRouter);
 app.use("/favorite-products/",favoriteProductsRouter);
 app.use("/cart-items/", cartItemsRouter);
+app.use("/subscriptions/", subscriptionRouter);
 app.use(errorMiddleware);
 
 const startServer = async () => {
