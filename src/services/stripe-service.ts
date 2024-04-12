@@ -1,6 +1,9 @@
 import Stripe from "stripe";
 import {STRIPE_SECRET_KEY, STRIPE_WEBHOOK_ENDPOINT_SECRET} from "../config/envirenmentVariables";
 import {UserDto} from "../dtos/user-dto";
+import {User} from "../database/models/user";
+import {ApiError} from "../exceptions/api-error";
+import {StripeCustomer} from "../database/models/stripe-customer";
 
 class StripeService {
   private stripe;
@@ -61,16 +64,6 @@ class StripeService {
     }
   }
 
-  async getCustomer(userDto: UserDto) {
-    let customer = await this.stripe.customers.search({
-      query: `email:'${userDto.email}'`,
-    });
-    if (!customer?.data?.length) {
-      return await this.createCustomer(userDto);
-    }
-    return customer.data[0];
-  }
-
   async createCustomer(userDto: UserDto) {
     return await this.stripe.customers.create({
       name: `${userDto.first_name} ${userDto.last_name}`,
@@ -78,15 +71,14 @@ class StripeService {
     });
   }
 
-  async buyProduct(amount: number, productsInfo: {id: number, count: number}[], userDto: UserDto) {
-    const customer = await this.getCustomer(userDto);
+  async buyProduct(amount: number, productsInfo: {id: number, count: number}[], customerId: string) {
     return await this.stripe.paymentIntents.create({
       amount: amount * 100,
       currency: "usd",
       automatic_payment_methods: {
         enabled: true,
       },
-      customer: customer.id,
+      customer: customerId,
       metadata: {
         products: JSON.stringify(productsInfo),
       }
@@ -102,7 +94,12 @@ class StripeService {
   }
 
   async getCustomerPayedProducts(userDto: UserDto) {
-    const payments = await this.getUserPayments(userDto);
+    const userEntity = await User.findOne({where: {email: userDto.email}});
+    if (!userEntity) {
+      throw ApiError.UnauthorizedError();
+    }
+    const customerEntity = await StripeCustomer.findOne({where: {user_id: userEntity.id}});
+    const payments = await this.getUserPayments(customerEntity.stripe_customer_id);
     return payments.reduce((acc, cur) => {
       if (!cur.metadata?.products) {
         return acc;
@@ -117,10 +114,9 @@ class StripeService {
     }, [])
   }
 
-  async getUserPayments(userDto: UserDto) {
-    const customer = await this.getCustomer(userDto);
+  async getUserPayments(customerId: string) {
     return (await this.stripe.paymentIntents.search({
-      query: `customer:'${customer.id}'`,
+      query: `customer:'${customerId}'`,
     })).data;
   }
 

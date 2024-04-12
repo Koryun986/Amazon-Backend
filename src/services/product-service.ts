@@ -266,7 +266,12 @@ class ProductService {
         if (!productEntity) {
             throw new Error("Product with this id doesn't exist");
         }
-        const stripeSession = await stripeService.buyProduct(productEntity.price * count, [{id, count}], userDto);
+        const userEntity = await User.findOne({where: {email: userDto.email}});
+        if (!userEntity) {
+            throw ApiError.UnauthorizedError();
+        }
+        const customerEntity = await StripeCustomer.findOne({where: {user_id: userEntity.id}});
+        const stripeSession = await stripeService.buyProduct(productEntity.price * count, [{id, count}], customerEntity.stripe_customer_id);
         return {
             product: productEntity,
             amount: stripeSession.amount,
@@ -308,7 +313,8 @@ class ProductService {
             }
             return {id:product.id, count: cartItem.count};
         });
-        const stripeSession = await stripeService.buyProduct(amount, productInfos ,userDto);
+        const customerEntity = await StripeCustomer.findOne({where: {user_id: userEntity.id}});
+        const stripeSession = await stripeService.buyProduct(amount, productInfos ,customerEntity.stripe_customer_id);
         return {
             clientSecret: stripeSession.client_secret,
             amount: stripeSession.amount,
